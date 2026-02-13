@@ -158,6 +158,7 @@ const Orders = () => {
             <DialogContent className="sm:max-w-md">
               <DialogHeader>
                 <DialogTitle>Create New Order</DialogTitle>
+                <DialogDescription>Create a new order for a client with product details.</DialogDescription>
               </DialogHeader>
               <form onSubmit={handleCreateOrder} className="space-y-4 mt-4">
                 <div className="space-y-2">

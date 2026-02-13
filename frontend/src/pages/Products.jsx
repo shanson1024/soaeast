@@ -147,6 +147,7 @@ const Products = () => {
             <DialogContent className="sm:max-w-md">
               <DialogHeader>
                 <DialogTitle>Add New Product</DialogTitle>
+                <DialogDescription>Add a new product to your catalog with pricing and details.</DialogDescription>
               </DialogHeader>
               <form onSubmit={handleCreateProduct} className="space-y-4 mt-4">
                 <div className="space-y-2">

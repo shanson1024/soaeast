@@ -134,6 +134,7 @@ const Clients = () => {
             <DialogContent className="sm:max-w-md">
               <DialogHeader>
                 <DialogTitle>Add New Client</DialogTitle>
+                <DialogDescription>Fill in the details below to add a new client to your CRM.</DialogDescription>
               </DialogHeader>
               <form onSubmit={handleCreateClient} className="space-y-4 mt-4">
                 <div className="space-y-2">
