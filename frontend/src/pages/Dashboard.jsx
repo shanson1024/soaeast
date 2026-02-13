@@ -17,12 +17,20 @@ const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
 const Dashboard = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [stats, setStats] = useState(null);
   const [pipelineSummary, setPipelineSummary] = useState(null);
   const [salesTrend, setSalesTrend] = useState([]);
   const [recentDeals, setRecentDeals] = useState([]);
+  const [clients, setClients] = useState([]);
   const [trendView, setTrendView] = useState('monthly');
   const [loading, setLoading] = useState(true);
+  
+  // Quick action modals
+  const [quickDealOpen, setQuickDealOpen] = useState(false);
+  const [quickOrderOpen, setQuickOrderOpen] = useState(false);
+  const [newDeal, setNewDeal] = useState({ client_name: '', amount: '', product_description: '', stage: 'prospecting', priority: 'medium', tags: [] });
+  const [newOrder, setNewOrder] = useState({ client_id: '', products_description: '', amount: '', priority: 'medium', due_date: '' });
 
   useEffect(() => {
     fetchDashboardData();
@@ -30,20 +38,48 @@ const Dashboard = () => {
 
   const fetchDashboardData = async () => {
     try {
-      const [statsRes, pipelineRes, trendRes, dealsRes] = await Promise.all([
+      const [statsRes, pipelineRes, trendRes, dealsRes, clientsRes] = await Promise.all([
         axios.get(`${API}/dashboard/stats`),
         axios.get(`${API}/dashboard/pipeline-summary`),
         axios.get(`${API}/dashboard/sales-trend`),
-        axios.get(`${API}/dashboard/recent-deals`)
+        axios.get(`${API}/dashboard/recent-deals`),
+        axios.get(`${API}/clients`)
       ]);
       setStats(statsRes.data);
       setPipelineSummary(pipelineRes.data);
       setSalesTrend(trendRes.data);
       setRecentDeals(dealsRes.data);
+      setClients(clientsRes.data);
     } catch (error) {
       console.error('Failed to fetch dashboard data:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleQuickDeal = async (e) => {
+    e.preventDefault();
+    try {
+      await axios.post(`${API}/deals`, { ...newDeal, amount: parseFloat(newDeal.amount), owner_initials: user?.initials || 'SH', owner_color: '#2d6a4f' });
+      toast.success('Deal created successfully!');
+      setQuickDealOpen(false);
+      setNewDeal({ client_name: '', amount: '', product_description: '', stage: 'prospecting', priority: 'medium', tags: [] });
+      fetchDashboardData();
+    } catch (error) {
+      toast.error('Failed to create deal');
+    }
+  };
+
+  const handleQuickOrder = async (e) => {
+    e.preventDefault();
+    try {
+      await axios.post(`${API}/orders`, { ...newOrder, amount: parseFloat(newOrder.amount), status: 'draft', progress_percent: 0 });
+      toast.success('Order created successfully!');
+      setQuickOrderOpen(false);
+      setNewOrder({ client_id: '', products_description: '', amount: '', priority: 'medium', due_date: '' });
+      fetchDashboardData();
+    } catch (error) {
+      toast.error('Failed to create order');
     }
   };
 
