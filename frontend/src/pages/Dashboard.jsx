@@ -1,10 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import Layout from '../components/layout/Layout';
 import TopBar from '../components/layout/TopBar';
 import { Button } from '../components/ui/button';
-import { TrendingUp, TrendingDown, FileText, Users, DollarSign, Filter, Download } from 'lucide-react';
+import { Input } from '../components/ui/input';
+import { Label } from '../components/ui/label';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from '../components/ui/dialog';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
+import { toast } from 'sonner';
+import { TrendingUp, TrendingDown, FileText, Users, DollarSign, Filter, Download, Plus, Package, ClipboardList, Zap } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
