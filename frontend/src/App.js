@@ -1,51 +1,176 @@
-import { useEffect } from "react";
+import React from "react";
 import "@/App.css";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import axios from "axios";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { AuthProvider, useAuth } from "./context/AuthContext";
 
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
-const API = `${BACKEND_URL}/api`;
+// Pages
+import Login from "./pages/Login";
+import Dashboard from "./pages/Dashboard";
+import Clients from "./pages/Clients";
+import Products from "./pages/Products";
+import Orders from "./pages/Orders";
+import Pipeline from "./pages/Pipeline";
+import Settings from "./pages/Settings";
+import Reports from "./pages/Reports";
+import Messages from "./pages/Messages";
+import Channels from "./pages/Channels";
+import Roles from "./pages/Roles";
+import Integrations from "./pages/Integrations";
 
-const Home = () => {
-  const helloWorldApi = async () => {
-    try {
-      const response = await axios.get(`${API}/`);
-      console.log(response.data.message);
-    } catch (e) {
-      console.error(e, `errored out requesting / api`);
-    }
-  };
+// Protected Route Component
+const ProtectedRoute = ({ children }) => {
+  const { isAuthenticated, loading } = useAuth();
 
-  useEffect(() => {
-    helloWorldApi();
-  }, []);
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-crm-bg flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-crm-green"></div>
+      </div>
+    );
+  }
 
-  return (
-    <div>
-      <header className="App-header">
-        <a
-          className="App-link"
-          href="https://emergent.sh"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <img src="https://avatars.githubusercontent.com/in/1201222?s=120&u=2686cf91179bbafbc7a71bfbc43004cf9ae1acea&v=4" />
-        </a>
-        <p className="mt-5">Building something incredible ~!</p>
-      </header>
-    </div>
-  );
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+
+  return children;
 };
+
+// Public Route (redirect if authenticated)
+const PublicRoute = ({ children }) => {
+  const { isAuthenticated, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-crm-bg flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-crm-green"></div>
+      </div>
+    );
+  }
+
+  if (isAuthenticated) {
+    return <Navigate to="/" replace />;
+  }
+
+  return children;
+};
+
+function AppRoutes() {
+  return (
+    <Routes>
+      {/* Public Routes */}
+      <Route 
+        path="/login" 
+        element={
+          <PublicRoute>
+            <Login />
+          </PublicRoute>
+        } 
+      />
+
+      {/* Protected Routes */}
+      <Route 
+        path="/" 
+        element={
+          <ProtectedRoute>
+            <Dashboard />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/clients" 
+        element={
+          <ProtectedRoute>
+            <Clients />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/products" 
+        element={
+          <ProtectedRoute>
+            <Products />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/orders" 
+        element={
+          <ProtectedRoute>
+            <Orders />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/pipeline" 
+        element={
+          <ProtectedRoute>
+            <Pipeline />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/settings" 
+        element={
+          <ProtectedRoute>
+            <Settings />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/reports" 
+        element={
+          <ProtectedRoute>
+            <Reports />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/messages" 
+        element={
+          <ProtectedRoute>
+            <Messages />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/channels" 
+        element={
+          <ProtectedRoute>
+            <Channels />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/roles" 
+        element={
+          <ProtectedRoute>
+            <Roles />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/integrations" 
+        element={
+          <ProtectedRoute>
+            <Integrations />
+          </ProtectedRoute>
+        } 
+      />
+
+      {/* Catch all - redirect to dashboard */}
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
+  );
+}
 
 function App() {
   return (
     <div className="App">
       <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Home />}>
-            <Route index element={<Home />} />
-          </Route>
-        </Routes>
+        <AuthProvider>
+          <AppRoutes />
+        </AuthProvider>
       </BrowserRouter>
     </div>
   );
