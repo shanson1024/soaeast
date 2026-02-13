@@ -1,34 +1,93 @@
-.App-logo {
-    height: 40vmin;
-    pointer-events: none;
+/* App-specific styles */
+.sidebar-item {
+    @apply flex items-center gap-3 px-4 py-2.5 rounded-lg transition-all duration-200 cursor-pointer;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-    .App-logo {
-        animation: App-logo-spin infinite 20s linear;
-    }
+.sidebar-item.active {
+    @apply bg-crm-green-light text-crm-green font-medium;
 }
 
-.App-header {
-    background-color: #0f0f10;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    font-size: calc(10px + 2vmin);
-    color: white;
+.sidebar-item:not(.active) {
+    @apply text-crm-text-secondary hover:text-crm-text-primary hover:bg-crm-hover;
 }
 
-.App-link {
-    color: #61dafb;
+/* KPI Card sparkline */
+.sparkline-bar {
+    @apply w-1.5 rounded-sm transition-all duration-200;
 }
 
-@keyframes App-logo-spin {
-    from {
-        transform: rotate(0deg);
-    }
-    to {
-        transform: rotate(360deg);
-    }
+/* Table styles */
+.data-table th {
+    @apply text-[10px] uppercase tracking-[1.5px] text-crm-text-muted font-bold py-3 px-4 text-left border-b border-crm-border;
 }
+
+.data-table td {
+    @apply py-3 px-4 border-b border-crm-border text-sm;
+}
+
+.data-table tr:hover td {
+    @apply bg-crm-hover;
+}
+
+/* Pipeline card styles */
+.pipeline-card {
+    @apply bg-white rounded-xl border border-crm-border p-4 mb-3 cursor-grab active:cursor-grabbing transition-all duration-200;
+}
+
+.pipeline-card:hover {
+    @apply shadow-md;
+}
+
+.pipeline-card.won {
+    @apply border-l-4 border-l-crm-green;
+}
+
+.pipeline-card.lost {
+    @apply border-l-4 border-l-crm-danger opacity-70;
+}
+
+/* Status dot */
+.status-dot {
+    @apply w-2 h-2 rounded-full inline-block mr-2;
+}
+
+.status-dot.high { @apply bg-crm-danger; }
+.status-dot.medium { @apply bg-crm-warning; }
+.status-dot.low { @apply bg-crm-green; }
+
+/* Category tags */
+.category-tag {
+    @apply text-xs px-2 py-0.5 rounded-full font-medium;
+}
+
+.category-tag.apparel { @apply bg-purple-100 text-purple-700; }
+.category-tag.drinkware { @apply bg-blue-100 text-blue-700; }
+.category-tag.tech { @apply bg-cyan-100 text-cyan-700; }
+.category-tag.bags { @apply bg-amber-100 text-amber-700; }
+.category-tag.office { @apply bg-gray-100 text-gray-700; }
+.category-tag.gifts { @apply bg-pink-100 text-pink-700; }
+.category-tag.outdoor { @apply bg-green-100 text-green-700; }
+
+/* Input focus states */
+input:focus, select:focus, textarea:focus {
+    @apply outline-none ring-2 ring-crm-green/20 border-crm-green;
+}
+
+/* Modal backdrop */
+.modal-backdrop {
+    @apply fixed inset-0 bg-black/50 flex items-center justify-center z-50;
+}
+
+/* Tier badges */
+.tier-badge {
+    @apply inline-flex items-center gap-1.5 text-xs font-medium;
+}
+
+.tier-badge .dot {
+    @apply w-2 h-2 rounded-full;
+}
+
+.tier-badge.gold .dot { @apply bg-yellow-500; }
+.tier-badge.silver .dot { @apply bg-gray-400; }
+.tier-badge.bronze .dot { @apply bg-amber-600; }
+.tier-badge.new .dot { @apply bg-crm-green; }
