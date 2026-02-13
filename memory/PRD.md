@@ -58,11 +58,11 @@ Build a full-stack CRM application for SOA East LLC, a promotional products comp
 - [ ] Payment processing integration (UI ready)
 
 ### P2 (Future Features)
-- [ ] Reports page with detailed analytics
 - [ ] Messages/Communication feature
 - [ ] Channels management
 - [ ] User roles and permissions
 - [ ] Third-party integrations hub
+- [ ] Export to PDF/CSV functionality
 
 ## Next Tasks
 1. Connect Stripe for payment processing
