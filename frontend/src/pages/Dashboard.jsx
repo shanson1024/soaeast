@@ -193,6 +193,133 @@ const Dashboard = () => {
         />
       </div>
 
+      {/* Quick Actions */}
+      <div className="crm-card p-6 mb-8" data-testid="quick-actions">
+        <div className="flex items-center gap-2 mb-4">
+          <Zap size={18} className="text-crm-warning" />
+          <h3 className="font-medium text-lg">Quick Actions</h3>
+        </div>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          {/* Quick Deal */}
+          <Dialog open={quickDealOpen} onOpenChange={setQuickDealOpen}>
+            <DialogTrigger asChild>
+              <button data-testid="quick-deal-btn" className="flex items-center gap-3 p-4 rounded-xl border border-crm-border hover:border-crm-green hover:bg-crm-green-light/30 transition-all group">
+                <div className="p-2 bg-crm-green-light rounded-lg group-hover:bg-crm-green group-hover:text-white transition-colors">
+                  <ClipboardList size={18} className="text-crm-green group-hover:text-white" />
+                </div>
+                <div className="text-left">
+                  <p className="font-medium text-sm">New Deal</p>
+                  <p className="text-xs text-crm-text-secondary">Add to pipeline</p>
+                </div>
+              </button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-md">
+              <DialogHeader>
+                <DialogTitle>Quick Add Deal</DialogTitle>
+                <DialogDescription>Add a new deal to your sales pipeline quickly.</DialogDescription>
+              </DialogHeader>
+              <form onSubmit={handleQuickDeal} className="space-y-4 mt-4">
+                <div className="space-y-2">
+                  <Label className="label-uppercase">Client Name</Label>
+                  <Input value={newDeal.client_name} onChange={(e) => setNewDeal({...newDeal, client_name: e.target.value})} placeholder="Company name" required />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label className="label-uppercase">Amount ($)</Label>
+                    <Input type="number" value={newDeal.amount} onChange={(e) => setNewDeal({...newDeal, amount: e.target.value})} placeholder="0.00" required />
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="label-uppercase">Stage</Label>
+                    <Select value={newDeal.stage} onValueChange={(v) => setNewDeal({...newDeal, stage: v})}>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="prospecting">Prospecting</SelectItem>
+                        <SelectItem value="proposal">Proposal</SelectItem>
+                        <SelectItem value="negotiation">Negotiation</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label className="label-uppercase">Product Description</Label>
+                  <Input value={newDeal.product_description} onChange={(e) => setNewDeal({...newDeal, product_description: e.target.value})} placeholder="Brief description" required />
+                </div>
+                <Button type="submit" className="w-full btn-primary">Create Deal</Button>
+              </form>
+            </DialogContent>
+          </Dialog>
+
+          {/* Quick Order */}
+          <Dialog open={quickOrderOpen} onOpenChange={setQuickOrderOpen}>
+            <DialogTrigger asChild>
+              <button data-testid="quick-order-btn" className="flex items-center gap-3 p-4 rounded-xl border border-crm-border hover:border-crm-blue hover:bg-blue-50/50 transition-all group">
+                <div className="p-2 bg-blue-50 rounded-lg group-hover:bg-crm-blue group-hover:text-white transition-colors">
+                  <Package size={18} className="text-crm-blue group-hover:text-white" />
+                </div>
+                <div className="text-left">
+                  <p className="font-medium text-sm">New Order</p>
+                  <p className="text-xs text-crm-text-secondary">Create order</p>
+                </div>
+              </button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-md">
+              <DialogHeader>
+                <DialogTitle>Quick Add Order</DialogTitle>
+                <DialogDescription>Create a new order for a client quickly.</DialogDescription>
+              </DialogHeader>
+              <form onSubmit={handleQuickOrder} className="space-y-4 mt-4">
+                <div className="space-y-2">
+                  <Label className="label-uppercase">Client</Label>
+                  <Select value={newOrder.client_id} onValueChange={(v) => setNewOrder({...newOrder, client_id: v})}>
+                    <SelectTrigger><SelectValue placeholder="Select client" /></SelectTrigger>
+                    <SelectContent>
+                      {clients.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label className="label-uppercase">Products</Label>
+                  <Input value={newOrder.products_description} onChange={(e) => setNewOrder({...newOrder, products_description: e.target.value})} placeholder="e.g., 100x Polo Shirts" required />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label className="label-uppercase">Amount ($)</Label>
+                    <Input type="number" value={newOrder.amount} onChange={(e) => setNewOrder({...newOrder, amount: e.target.value})} placeholder="0.00" required />
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="label-uppercase">Due Date</Label>
+                    <Input type="date" value={newOrder.due_date} onChange={(e) => setNewOrder({...newOrder, due_date: e.target.value})} required />
+                  </div>
+                </div>
+                <Button type="submit" className="w-full btn-primary">Create Order</Button>
+              </form>
+            </DialogContent>
+          </Dialog>
+
+          {/* View Pipeline */}
+          <button onClick={() => navigate('/pipeline')} data-testid="quick-pipeline-btn" className="flex items-center gap-3 p-4 rounded-xl border border-crm-border hover:border-crm-purple hover:bg-purple-50/50 transition-all group">
+            <div className="p-2 bg-purple-50 rounded-lg group-hover:bg-crm-purple group-hover:text-white transition-colors">
+              <TrendingUp size={18} className="text-crm-purple group-hover:text-white" />
+            </div>
+            <div className="text-left">
+              <p className="font-medium text-sm">Pipeline</p>
+              <p className="text-xs text-crm-text-secondary">View deals</p>
+            </div>
+          </button>
+
+          {/* View Reports */}
+          <button onClick={() => navigate('/reports')} data-testid="quick-reports-btn" className="flex items-center gap-3 p-4 rounded-xl border border-crm-border hover:border-crm-warning hover:bg-amber-50/50 transition-all group">
+            <div className="p-2 bg-amber-50 rounded-lg group-hover:bg-crm-warning group-hover:text-white transition-colors">
+              <FileText size={18} className="text-crm-warning group-hover:text-white" />
+            </div>
+            <div className="text-left">
+              <p className="font-medium text-sm">Reports</p>
+              <p className="text-xs text-crm-text-secondary">View analytics</p>
+            </div>
+          </button>
+        </div>
+      </div>
+
       {/* Charts Row */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
         {/* Sales Trend Chart */}
