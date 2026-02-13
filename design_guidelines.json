@@ -1,0 +1,159 @@
+{
+  "identity": {
+    "name": "SOA East LLC CRM",
+    "persona": "E1 - The Anti-AI Designer",
+    "description": "A high-end, minimal, earth-tone SaaS dashboard for promotional products. Muted, grounded, and functional.",
+    "emotional_tone": "Professional, Organic, Efficient, Trustworthy",
+    "theme_mode": "light-only"
+  },
+  "typography": {
+    "primary_font": "DM Sans, sans-serif",
+    "secondary_font": "Instrument Serif, serif",
+    "google_fonts_url": "https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=Instrument+Serif:ital@0;1&display=swap",
+    "usage": {
+      "headings": {
+        "font": "Instrument Serif",
+        "weight": "400",
+        "tracking": "normal",
+        "sizes": {
+          "h1": "text-4xl md:text-5xl",
+          "h2": "text-3xl",
+          "h3": "text-2xl"
+        }
+      },
+      "body": {
+        "font": "DM Sans",
+        "weight": "400",
+        "tracking": "normal"
+      },
+      "labels": {
+        "font": "DM Sans",
+        "weight": "700",
+        "size": "text-[10px]",
+        "case": "uppercase",
+        "tracking": "tracking-[1.5px]"
+      }
+    }
+  },
+  "colors": {
+    "palette": {
+      "background": "#f6f5f1",
+      "card": "#ffffff",
+      "sidebar": "#ffffff",
+      "primary_text": "#1a1a1a",
+      "secondary_text": "#7a7a7a",
+      "accent_primary": "#2d6a4f",
+      "accent_light": "#d8f3dc",
+      "border": "#e8e7e3",
+      "status": {
+        "danger": "#d64545",
+        "warning": "#e6a817",
+        "info": "#4a5fd7",
+        "success": "#2d6a4f",
+        "purple": "#7c3aed"
+      }
+    },
+    "tailwind_config_extension": {
+      "colors": {
+        "crm-bg": "#f6f5f1",
+        "crm-card": "#ffffff",
+        "crm-text-primary": "#1a1a1a",
+        "crm-text-secondary": "#7a7a7a",
+        "crm-green": "#2d6a4f",
+        "crm-green-light": "#d8f3dc",
+        "crm-border": "#e8e7e3"
+      }
+    }
+  },
+  "layout": {
+    "grid_system": "Bento Grid - Mode B (High Density)",
+    "container_style": "max-w-[1600px] mx-auto p-6 md:p-8",
+    "spacing": {
+      "dashboard_gap": "gap-6",
+      "card_padding": "p-6"
+    }
+  },
+  "components": {
+    "cards": {
+      "bg": "bg-white",
+      "border": "border border-[#e8e7e3]",
+      "radius": "rounded-[14px]",
+      "shadow": "shadow-[0_2px_10px_rgba(0,0,0,0.03)] hover:shadow-[0_4px_20px_rgba(0,0,0,0.06)] transition-all duration-300"
+    },
+    "buttons": {
+      "primary": "bg-[#2d6a4f] text-white hover:bg-[#23533e] rounded-[10px] px-6 py-2 transition-colors",
+      "secondary": "bg-white border border-[#e8e7e3] text-[#1a1a1a] hover:bg-[#f6f5f1] rounded-[10px] px-6 py-2 transition-colors",
+      "danger": "bg-[#d64545] text-white hover:bg-[#b53535] rounded-[10px] px-6 py-2"
+    },
+    "sidebar": {
+      "bg": "bg-white",
+      "border": "border-r border-[#e8e7e3]",
+      "item_active": "bg-[#d8f3dc] text-[#2d6a4f]",
+      "item_inactive": "text-[#7a7a7a] hover:text-[#1a1a1a] hover:bg-[#f6f5f1]"
+    },
+    "inputs": {
+      "style": "bg-white border border-[#e8e7e3] rounded-[10px] focus:ring-2 focus:ring-[#2d6a4f]/20 focus:border-[#2d6a4f]"
+    }
+  },
+  "assets": {
+    "products": [
+      {
+        "name": "Eco Notebook",
+        "category": "Office",
+        "url": "https://images.unsplash.com/photo-1507831182254-b94a183847c7"
+      },
+      {
+        "name": "Daily Planner",
+        "category": "Office",
+        "url": "https://images.unsplash.com/photo-1653070863209-432bae1ba097"
+      },
+      {
+        "name": "Premium Pens",
+        "category": "Stationery",
+        "url": "https://images.unsplash.com/photo-1479746800994-5e8d6a75c002"
+      }
+    ],
+    "avatars": [
+      {
+        "id": "user1",
+        "gender": "male",
+        "url": "https://images.unsplash.com/photo-1714331251780-db56109a9887"
+      },
+      {
+        "id": "user2",
+        "gender": "male",
+        "url": "https://images.unsplash.com/photo-1619241805829-34fb64299391"
+      },
+      {
+        "id": "user3",
+        "gender": "female",
+        "url": "https://images.unsplash.com/photo-1758600587728-9bde755354ad"
+      }
+    ]
+  },
+  "instructions_to_main_agent": {
+    "libraries": {
+      "icons": "lucide-react",
+      "charts": "recharts",
+      "drag_drop": "@hello-pangea/dnd",
+      "date": "date-fns",
+      "notifications": "sonner"
+    },
+    "implementation_rules": [
+      "CRITICAL: Do not implement Dark Mode. Force Light Mode styles.",
+      "CRITICAL: Use 'Instrument Serif' ONLY for Page Titles and Major Section Headings.",
+      "CRITICAL: Use 'DM Sans' for all other text.",
+      "CRITICAL: Add 'data-testid' to all interactive elements.",
+      "CRITICAL: Sidebar must be collapsible on mobile.",
+      "CRITICAL: Use the exact hex codes provided. Do not rely on default Tailwind colors.",
+      "LAYOUT: Dashboard should be dense but breathing. Use the 'Bento Grid' approach.",
+      "INTERACTION: Add subtle micro-interactions (hover lift, button press scale) using framer-motion if possible, or CSS transitions."
+    ],
+    "universal_guidelines": [
+      "Avoid 'AI Slop' aesthetics (no generic gradients, no centered everything).",
+      "Use glassmorphism sparingly (only for sticky headers/overlays).",
+      "Focus on 'Optical Alignment' over strict geometric alignment.",
+      "Never use 'Inter' font. Stick to the specified typography."
+    ]
+  }
+}
