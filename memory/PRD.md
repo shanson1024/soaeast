@@ -50,6 +50,8 @@ Build a full-stack CRM application for SOA East LLC, a promotional products comp
 - [x] Login/Auth flow
 - [x] Dashboard KPIs
 - [x] All CRUD operations
+- [x] Quick Actions widget
+- [x] Reports page with analytics
 
 ### P1 (High) - Placeholders Ready
 - [ ] Email notification integration (UI ready)
