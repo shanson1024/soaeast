@@ -36,7 +36,9 @@ Build a full-stack CRM application for SOA East LLC, a promotional products comp
 - Full authentication system with JWT tokens
 - 5 MongoDB collections: users, clients, products, orders, deals
 - 22 API endpoints for all CRUD operations
-- Dashboard with real-time stats and charts
+- Dashboard with real-time stats, charts, and Quick Actions widget
+- Quick Actions: one-click deal/order creation from dashboard
+- Reports page with analytics (revenue trends, industry breakdown, pipeline charts, top products)
 - Responsive sidebar navigation
 - Modal forms for creating clients, products, orders, deals
 - Drag-and-drop pipeline with stage transitions
