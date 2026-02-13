@@ -144,6 +144,7 @@ const Pipeline = () => {
               <DialogContent className="sm:max-w-md">
                 <DialogHeader>
                   <DialogTitle>Create New Deal</DialogTitle>
+                  <DialogDescription>Add a new deal to your sales pipeline.</DialogDescription>
                 </DialogHeader>
                 <form onSubmit={handleCreateDeal} className="space-y-4 mt-4">
                   <div className="space-y-2">
