@@ -88,6 +88,14 @@ function AppRoutes() {
         } 
       />
       <Route 
+        path="/clients/:id" 
+        element={
+          <ProtectedRoute>
+            <ClientDetail />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
         path="/products" 
         element={
           <ProtectedRoute>
