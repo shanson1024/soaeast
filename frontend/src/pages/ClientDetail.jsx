@@ -68,6 +68,38 @@ const ClientDetail = () => {
     }
   };
 
+  const handleOpenEditModal = () => {
+    setEditData({
+      name: client.name || '',
+      email: client.email || '',
+      phone: client.phone || '',
+      industry: client.industry || '',
+      tier: client.tier || 'new',
+      status: client.status || 'active',
+      address: client.address || '',
+      city: client.city || '',
+      state: client.state || '',
+      zip_code: client.zip_code || '',
+      contact_person: client.contact_person || '',
+      contact_title: client.contact_title || '',
+      website: client.website || '',
+      notes: client.notes || ''
+    });
+    setIsEditModalOpen(true);
+  };
+
+  const handleUpdateClient = async (e) => {
+    e.preventDefault();
+    try {
+      await axios.put(`${API}/clients/${id}`, editData);
+      toast.success('Client updated successfully');
+      setIsEditModalOpen(false);
+      fetchClientData();
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Failed to update client');
+    }
+  };
+
   const handleAddNote = async (e) => {
     e.preventDefault();
     if (!newNote.content.trim()) return;
