@@ -19,6 +19,15 @@ Build a full-stack CRM application for SOA East LLC, a promotional products comp
 
 ## What's Been Implemented (Feb 2026)
 
+### Client Information Management (NEW - Feb 14)
+- **Extended Client Fields**: phone, address, city, state, zip_code, contact_person, contact_title, website, notes
+- **Edit Client Modal**: Comprehensive form to update all client information from Client Detail page
+- **Add Client Modal**: Expanded form with all new fields for creating clients
+- **Client Detail Page Enhanced**: 
+  - Shows all contact info including website and full address
+  - Primary Contact section displays contact person and title
+  - Internal Notes section for client-specific notes
+
 ### Orders with Line Items
 - Orders now support multiple line items (product name, quantity, unit price)
 - Each line item shows calculated line total
@@ -31,7 +40,7 @@ Build a full-stack CRM application for SOA East LLC, a promotional products comp
 - Clickable client rows navigate to `/clients/:id`
 - Header shows: avatar, name, status/tier badges, email, industry
 - Summary stats: Total Revenue, Orders count, Deals count
-- **Overview Tab**: Contact info + Account summary
+- **Overview Tab**: Contact info + Primary Contact + Account summary + Internal Notes
 - **Orders Tab**: Historical orders with line items
 - **Deals Tab**: Related pipeline deals
 - **Activity Tab**: Notes/activity log with add/delete functionality
@@ -51,7 +60,31 @@ Build a full-stack CRM application for SOA East LLC, a promotional products comp
 
 ## Data Models
 
-### Orders (Updated)
+### Clients (Updated Feb 14)
+```json
+{
+  "id": "uuid",
+  "name": "string",
+  "email": "string",
+  "phone": "string (optional)",
+  "industry": "string",
+  "tier": "gold|silver|bronze|new",
+  "status": "active|inactive|lead",
+  "total_revenue": "float",
+  "total_orders": "int",
+  "address": "string (optional)",
+  "city": "string (optional)",
+  "state": "string (optional)",
+  "zip_code": "string (optional)",
+  "contact_person": "string (optional)",
+  "contact_title": "string (optional)",
+  "website": "string (optional)",
+  "notes": "string (optional)",
+  "created_at": "datetime"
+}
+```
+
+### Orders
 ```json
 {
   "id": "uuid",
@@ -87,11 +120,12 @@ Build a full-stack CRM application for SOA East LLC, a promotional products comp
 
 ## API Endpoints
 
-### Orders
-- `GET /api/orders` - List with optional client_id filter
-- `POST /api/orders` - Create with line_items array
-- `PUT /api/orders/:id` - Update order and line items
-- `DELETE /api/orders/:id` - Delete order
+### Clients
+- `GET /api/clients` - List all clients
+- `GET /api/clients/:id` - Get single client with all fields
+- `POST /api/clients` - Create client with all fields
+- `PUT /api/clients/:id` - Update client fields
+- `DELETE /api/clients/:id` - Delete client
 
 ### Client Detail
 - `GET /api/clients/:id/orders` - Client's order history
@@ -100,15 +134,21 @@ Build a full-stack CRM application for SOA East LLC, a promotional products comp
 - `POST /api/clients/:id/notes` - Add note to activity
 - `DELETE /api/clients/:id/notes/:noteId` - Delete note
 
+### Orders
+- `GET /api/orders` - List with optional client_id filter
+- `POST /api/orders` - Create with line_items array
+- `PUT /api/orders/:id` - Update order and line items
+- `DELETE /api/orders/:id` - Delete order
+
 ## Test Credentials
 - **Email**: scott@soaeast.com
 - **Password**: admin123
 
 ## Testing Status
-- Backend: 100% (16/16 tests passed)
+- Backend: 100% (9/9 client extended tests + 16 existing tests)
 - Frontend: 100% (all UI flows verified)
 - Test files: `/app/backend/tests/`
-- Latest test report: `/app/test_reports/iteration_5.json`
+- Latest test report: `/app/test_reports/iteration_6.json`
 
 ## Bug Fixes (Feb 14, 2026)
 
