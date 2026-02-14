@@ -23,7 +23,7 @@ client = AsyncIOMotorClient(mongo_url)
 db = client[os.environ['DB_NAME']]
 
 # JWT Settings
-SECRET_KEY = os.environ.get('JWT_SECRET', 'soa-east-llc-crm-production-secret-key-2024-secure')
+SECRET_KEY = os.environ['JWT_SECRET']
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24  # 24 hours
 
@@ -544,11 +544,18 @@ async def get_orders(
     
     orders = await db.orders.find(query, {"_id": 0}).sort("created_at", -1).to_list(1000)
     
+    # Batch fetch client names to avoid N+1 query problem
+    client_ids = list(set(o.get("client_id") for o in orders if o.get("client_id")))
+    if client_ids:
+        clients = await db.clients.find({"id": {"$in": client_ids}}, {"_id": 0, "id": 1, "name": 1}).to_list(len(client_ids))
+        client_map = {c["id"]: c["name"] for c in clients}
+    else:
+        client_map = {}
+    
     # Enrich with client names and calculated totals
     for order in orders:
         if order.get("client_id"):
-            client = await db.clients.find_one({"id": order["client_id"]}, {"_id": 0, "name": 1})
-            order["client_name"] = client["name"] if client else "Unknown"
+            order["client_name"] = client_map.get(order["client_id"], "Unknown")
         order = enrich_order_response(order)
     
     return [OrderResponse(**o) for o in orders]
