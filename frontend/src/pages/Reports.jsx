@@ -51,7 +51,7 @@ const Reports = () => {
   };
 
   // Calculate metrics
-  const totalRevenue = orders.reduce((acc, o) => acc + o.amount, 0);
+  const totalRevenue = orders.reduce((acc, o) => acc + (o.total || 0), 0);
   const avgOrderValue = orders.length > 0 ? totalRevenue / orders.length : 0;
   const activeClients = clients.filter(c => c.status === 'active').length;
   const conversionRate = deals.length > 0 ? (deals.filter(d => d.stage === 'won').length / deals.length * 100).toFixed(1) : 0;
