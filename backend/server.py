@@ -23,13 +23,20 @@ client = AsyncIOMotorClient(mongo_url)
 db = client[os.environ['DB_NAME']]
 
 # JWT Settings
-SECRET_KEY = os.environ.get('JWT_SECRET', 'soa-east-llc-secret-key-2024')
+SECRET_KEY = os.environ.get('JWT_SECRET', 'soa-east-llc-crm-production-secret-key-2024-secure')
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24  # 24 hours
 
 app = FastAPI()
 api_router = APIRouter(prefix="/api")
 security = HTTPBearer()
+
+# ============== HEALTH CHECK ==============
+
+@app.get("/health")
+async def health_check():
+    """Health check endpoint for Kubernetes probes"""
+    return {"status": "healthy", "service": "soa-crm-api"}
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
