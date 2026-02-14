@@ -470,7 +470,7 @@ const Dashboard = () => {
               </tr>
             </thead>
             <tbody>
-              {recentDeals.map((deal, index) => (
+              {filteredDeals.map((deal, index) => (
                 <tr key={deal.id || index}>
                   <td>
                     <div className="flex items-center gap-3">
