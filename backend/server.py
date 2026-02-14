@@ -426,11 +426,33 @@ async def delete_product(product_id: str, current_user: dict = Depends(get_curre
 def generate_order_id():
     return f"SOA-{random.randint(1000, 9999)}"
 
+def calculate_order_totals(line_items: list, tax_rate: float = 8.5):
+    """Calculate subtotal, tax, and total for an order"""
+    subtotal = sum(item.get('quantity', 1) * item.get('unit_price', 0) for item in line_items)
+    tax_amount = round(subtotal * (tax_rate / 100), 2)
+    total = round(subtotal + tax_amount, 2)
+    return subtotal, tax_amount, total
+
+def enrich_order_response(order: dict) -> dict:
+    """Add calculated fields and ensure all required fields exist"""
+    line_items = order.get('line_items', [])
+    tax_rate = order.get('tax_rate', 8.5)
+    subtotal, tax_amount, total = calculate_order_totals(line_items, tax_rate)
+    
+    order['line_items'] = line_items
+    order['subtotal'] = subtotal
+    order['tax_rate'] = tax_rate
+    order['tax_amount'] = tax_amount
+    order['total'] = total
+    order['notes'] = order.get('notes', '')
+    return order
+
 @api_router.get("/orders", response_model=List[OrderResponse])
 async def get_orders(
     status: Optional[str] = None,
     priority: Optional[str] = None,
     search: Optional[str] = None,
+    client_id: Optional[str] = None,
     current_user: dict = Depends(get_current_user)
 ):
     query = {}
@@ -438,19 +460,22 @@ async def get_orders(
         query["status"] = status
     if priority:
         query["priority"] = priority
+    if client_id:
+        query["client_id"] = client_id
     if search:
         query["$or"] = [
             {"order_id": {"$regex": search, "$options": "i"}},
-            {"products_description": {"$regex": search, "$options": "i"}}
+            {"line_items.product_name": {"$regex": search, "$options": "i"}}
         ]
     
     orders = await db.orders.find(query, {"_id": 0}).sort("created_at", -1).to_list(1000)
     
-    # Enrich with client names
+    # Enrich with client names and calculated totals
     for order in orders:
         if order.get("client_id"):
             client = await db.clients.find_one({"id": order["client_id"]}, {"_id": 0, "name": 1})
             order["client_name"] = client["name"] if client else "Unknown"
+        order = enrich_order_response(order)
     
     return [OrderResponse(**o) for o in orders]
 
@@ -464,16 +489,36 @@ async def get_order(order_id: str, current_user: dict = Depends(get_current_user
         client = await db.clients.find_one({"id": order["client_id"]}, {"_id": 0, "name": 1})
         order["client_name"] = client["name"] if client else "Unknown"
     
+    order = enrich_order_response(order)
     return OrderResponse(**order)
 
 @api_router.post("/orders", response_model=OrderResponse)
 async def create_order(order: OrderCreate, current_user: dict = Depends(get_current_user)):
     order_id = str(uuid.uuid4())
     now = datetime.now(timezone.utc).isoformat()
+    
+    # Get tax rate from settings
+    settings = await db.settings.find_one({"type": "global"}, {"_id": 0})
+    tax_rate = settings.get("tax_rate", 8.5) if settings else 8.5
+    
+    # Convert line items to dicts
+    line_items = [item.model_dump() for item in order.line_items]
+    subtotal, tax_amount, total = calculate_order_totals(line_items, tax_rate)
+    
     order_doc = {
         "id": order_id,
         "order_id": generate_order_id(),
-        **order.model_dump(),
+        "client_id": order.client_id,
+        "line_items": line_items,
+        "subtotal": subtotal,
+        "tax_rate": tax_rate,
+        "tax_amount": tax_amount,
+        "total": total,
+        "status": order.status,
+        "progress_percent": order.progress_percent,
+        "due_date": order.due_date,
+        "priority": order.priority,
+        "notes": order.notes,
         "created_at": now
     }
     await db.orders.insert_one(order_doc)
@@ -481,7 +526,7 @@ async def create_order(order: OrderCreate, current_user: dict = Depends(get_curr
     # Update client's last order date and order count
     await db.clients.update_one(
         {"id": order.client_id},
-        {"$set": {"last_order_date": now}, "$inc": {"total_orders": 1, "total_revenue": order.amount}}
+        {"$set": {"last_order_date": now}, "$inc": {"total_orders": 1, "total_revenue": total}}
     )
     
     order_doc["client_name"] = None
@@ -493,7 +538,26 @@ async def create_order(order: OrderCreate, current_user: dict = Depends(get_curr
 
 @api_router.put("/orders/{order_id}", response_model=OrderResponse)
 async def update_order(order_id: str, update: OrderUpdate, current_user: dict = Depends(get_current_user)):
-    update_data = {k: v for k, v in update.model_dump().items() if v is not None}
+    update_data = {}
+    
+    # Handle line items specially to recalculate totals
+    if update.line_items is not None:
+        line_items = [item.model_dump() for item in update.line_items]
+        settings = await db.settings.find_one({"type": "global"}, {"_id": 0})
+        tax_rate = settings.get("tax_rate", 8.5) if settings else 8.5
+        subtotal, tax_amount, total = calculate_order_totals(line_items, tax_rate)
+        update_data["line_items"] = line_items
+        update_data["subtotal"] = subtotal
+        update_data["tax_rate"] = tax_rate
+        update_data["tax_amount"] = tax_amount
+        update_data["total"] = total
+    
+    # Add other fields
+    for field in ['status', 'progress_percent', 'due_date', 'priority', 'notes']:
+        value = getattr(update, field)
+        if value is not None:
+            update_data[field] = value
+    
     if not update_data:
         raise HTTPException(status_code=400, detail="No fields to update")
     
@@ -506,6 +570,7 @@ async def update_order(order_id: str, update: OrderUpdate, current_user: dict = 
         client = await db.clients.find_one({"id": order["client_id"]}, {"_id": 0, "name": 1})
         order["client_name"] = client["name"] if client else "Unknown"
     
+    order = enrich_order_response(order)
     return OrderResponse(**order)
 
 @api_router.delete("/orders/{order_id}")
