@@ -1756,22 +1756,22 @@ async def update_settings(update: SettingsUpdate, current_user: dict = Depends(g
 
 @api_router.get("/export/clients")
 async def export_clients(current_user: dict = Depends(get_current_user)):
-    clients = await db.clients.find({}, {"_id": 0}).to_list(1000)
+    clients = await db.clients.find({}, {"_id": 0}).limit(500).to_list(500)
     return {"data": clients, "count": len(clients), "type": "clients"}
 
 @api_router.get("/export/orders")
 async def export_orders(current_user: dict = Depends(get_current_user)):
-    orders = await db.orders.find({}, {"_id": 0}).to_list(1000)
+    orders = await db.orders.find({}, {"_id": 0}).limit(500).to_list(500)
     return {"data": orders, "count": len(orders), "type": "orders"}
 
 @api_router.get("/export/deals")
 async def export_deals(current_user: dict = Depends(get_current_user)):
-    deals = await db.deals.find({}, {"_id": 0}).to_list(1000)
+    deals = await db.deals.find({}, {"_id": 0}).limit(500).to_list(500)
     return {"data": deals, "count": len(deals), "type": "deals"}
 
 @api_router.get("/export/products")
 async def export_products(current_user: dict = Depends(get_current_user)):
-    products = await db.products.find({}, {"_id": 0}).to_list(1000)
+    products = await db.products.find({}, {"_id": 0}).limit(500).to_list(500)
     return {"data": products, "count": len(products), "type": "products"}
 
 # ============== ROOT ROUTE ==============
