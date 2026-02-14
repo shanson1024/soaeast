@@ -749,6 +749,270 @@ async def seed_database():
     
     return {"message": "Database seeded successfully", "seeded": True}
 
+# ============== ROLES & TEAM MANAGEMENT ==============
+
+class RoleCreate(BaseModel):
+    name: str
+    description: str = ""
+    permissions: dict = {}
+    color: str = "#2d6a4f"
+
+class RoleResponse(BaseModel):
+    id: str
+    name: str
+    description: str
+    permissions: dict
+    color: str
+    user_count: int = 0
+    created_at: str
+
+class RoleUpdate(BaseModel):
+    name: Optional[str] = None
+    description: Optional[str] = None
+    permissions: Optional[dict] = None
+    color: Optional[str] = None
+
+class TeamMemberResponse(BaseModel):
+    id: str
+    name: str
+    email: str
+    role: str
+    role_id: Optional[str] = None
+    initials: str
+    status: str = "active"
+    created_at: str
+
+class TeamMemberUpdate(BaseModel):
+    name: Optional[str] = None
+    role: Optional[str] = None
+    role_id: Optional[str] = None
+    status: Optional[str] = None
+
+# Default permissions structure
+DEFAULT_PERMISSIONS = {
+    "dashboard": {"view": True},
+    "clients": {"view": True, "create": True, "edit": True, "delete": False},
+    "products": {"view": True, "create": True, "edit": True, "delete": False},
+    "orders": {"view": True, "create": True, "edit": True, "delete": False},
+    "pipeline": {"view": True, "create": True, "edit": True, "delete": False},
+    "reports": {"view": True, "export": False},
+    "settings": {"view": False, "edit": False},
+    "team": {"view": False, "manage": False}
+}
+
+@api_router.get("/roles", response_model=List[RoleResponse])
+async def get_roles(current_user: dict = Depends(get_current_user)):
+    roles = await db.roles.find({}, {"_id": 0}).to_list(100)
+    
+    # Count users per role
+    for role in roles:
+        user_count = await db.users.count_documents({"role_id": role["id"]})
+        role["user_count"] = user_count
+    
+    return [RoleResponse(**r) for r in roles]
+
+@api_router.get("/roles/{role_id}", response_model=RoleResponse)
+async def get_role(role_id: str, current_user: dict = Depends(get_current_user)):
+    role = await db.roles.find_one({"id": role_id}, {"_id": 0})
+    if not role:
+        raise HTTPException(status_code=404, detail="Role not found")
+    
+    user_count = await db.users.count_documents({"role_id": role_id})
+    role["user_count"] = user_count
+    
+    return RoleResponse(**role)
+
+@api_router.post("/roles", response_model=RoleResponse)
+async def create_role(role: RoleCreate, current_user: dict = Depends(get_current_user)):
+    role_id = str(uuid.uuid4())
+    now = datetime.now(timezone.utc).isoformat()
+    
+    # Merge with default permissions
+    permissions = {**DEFAULT_PERMISSIONS}
+    for key, value in role.permissions.items():
+        if key in permissions:
+            permissions[key] = {**permissions[key], **value}
+    
+    role_doc = {
+        "id": role_id,
+        "name": role.name,
+        "description": role.description,
+        "permissions": permissions,
+        "color": role.color,
+        "created_at": now
+    }
+    await db.roles.insert_one(role_doc)
+    role_doc["user_count"] = 0
+    return RoleResponse(**{k: v for k, v in role_doc.items() if k != "_id"})
+
+@api_router.put("/roles/{role_id}", response_model=RoleResponse)
+async def update_role(role_id: str, update: RoleUpdate, current_user: dict = Depends(get_current_user)):
+    update_data = {k: v for k, v in update.model_dump().items() if v is not None}
+    if not update_data:
+        raise HTTPException(status_code=400, detail="No fields to update")
+    
+    result = await db.roles.update_one({"id": role_id}, {"$set": update_data})
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Role not found")
+    
+    role = await db.roles.find_one({"id": role_id}, {"_id": 0})
+    user_count = await db.users.count_documents({"role_id": role_id})
+    role["user_count"] = user_count
+    
+    return RoleResponse(**role)
+
+@api_router.delete("/roles/{role_id}")
+async def delete_role(role_id: str, current_user: dict = Depends(get_current_user)):
+    # Check if users are assigned to this role
+    user_count = await db.users.count_documents({"role_id": role_id})
+    if user_count > 0:
+        raise HTTPException(status_code=400, detail=f"Cannot delete role with {user_count} assigned users")
+    
+    result = await db.roles.delete_one({"id": role_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Role not found")
+    return {"message": "Role deleted"}
+
+# Team Management Endpoints
+@api_router.get("/team", response_model=List[TeamMemberResponse])
+async def get_team_members(current_user: dict = Depends(get_current_user)):
+    users = await db.users.find({}, {"_id": 0, "password": 0}).to_list(100)
+    return [TeamMemberResponse(**{**u, "status": u.get("status", "active")}) for u in users]
+
+@api_router.put("/team/{user_id}", response_model=TeamMemberResponse)
+async def update_team_member(user_id: str, update: TeamMemberUpdate, current_user: dict = Depends(get_current_user)):
+    update_data = {k: v for k, v in update.model_dump().items() if v is not None}
+    if not update_data:
+        raise HTTPException(status_code=400, detail="No fields to update")
+    
+    result = await db.users.update_one({"id": user_id}, {"$set": update_data})
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    user = await db.users.find_one({"id": user_id}, {"_id": 0, "password": 0})
+    return TeamMemberResponse(**{**user, "status": user.get("status", "active")})
+
+@api_router.post("/team/invite")
+async def invite_team_member(
+    email: str,
+    name: str,
+    role_id: str,
+    current_user: dict = Depends(get_current_user)
+):
+    # Check if email already exists
+    existing = await db.users.find_one({"email": email})
+    if existing:
+        raise HTTPException(status_code=400, detail="Email already registered")
+    
+    # Get role info
+    role = await db.roles.find_one({"id": role_id}, {"_id": 0})
+    if not role:
+        raise HTTPException(status_code=404, detail="Role not found")
+    
+    user_id = str(uuid.uuid4())
+    initials = "".join([n[0].upper() for n in name.split()[:2]])
+    temp_password = f"temp{random.randint(1000, 9999)}"
+    
+    user_doc = {
+        "id": user_id,
+        "email": email,
+        "password": hash_password(temp_password),
+        "name": name,
+        "role": role["name"],
+        "role_id": role_id,
+        "initials": initials,
+        "status": "pending",
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    await db.users.insert_one(user_doc)
+    
+    return {
+        "message": "Team member invited",
+        "user_id": user_id,
+        "temp_password": temp_password  # In production, send via email
+    }
+
+# Seed default roles
+@api_router.post("/roles/seed-defaults")
+async def seed_default_roles():
+    existing = await db.roles.count_documents({})
+    if existing > 0:
+        return {"message": "Roles already exist", "seeded": False}
+    
+    default_roles = [
+        {
+            "id": str(uuid.uuid4()),
+            "name": "Administrator",
+            "description": "Full access to all features and settings",
+            "color": "#2d6a4f",
+            "permissions": {
+                "dashboard": {"view": True},
+                "clients": {"view": True, "create": True, "edit": True, "delete": True},
+                "products": {"view": True, "create": True, "edit": True, "delete": True},
+                "orders": {"view": True, "create": True, "edit": True, "delete": True},
+                "pipeline": {"view": True, "create": True, "edit": True, "delete": True},
+                "reports": {"view": True, "export": True},
+                "settings": {"view": True, "edit": True},
+                "team": {"view": True, "manage": True}
+            },
+            "created_at": datetime.now(timezone.utc).isoformat()
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "name": "Sales Manager",
+            "description": "Manage sales team, clients, and pipeline",
+            "color": "#4a5fd7",
+            "permissions": {
+                "dashboard": {"view": True},
+                "clients": {"view": True, "create": True, "edit": True, "delete": False},
+                "products": {"view": True, "create": False, "edit": False, "delete": False},
+                "orders": {"view": True, "create": True, "edit": True, "delete": False},
+                "pipeline": {"view": True, "create": True, "edit": True, "delete": True},
+                "reports": {"view": True, "export": True},
+                "settings": {"view": False, "edit": False},
+                "team": {"view": True, "manage": False}
+            },
+            "created_at": datetime.now(timezone.utc).isoformat()
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "name": "Account Executive",
+            "description": "Manage own clients and deals",
+            "color": "#7c3aed",
+            "permissions": {
+                "dashboard": {"view": True},
+                "clients": {"view": True, "create": True, "edit": True, "delete": False},
+                "products": {"view": True, "create": False, "edit": False, "delete": False},
+                "orders": {"view": True, "create": True, "edit": False, "delete": False},
+                "pipeline": {"view": True, "create": True, "edit": True, "delete": False},
+                "reports": {"view": True, "export": False},
+                "settings": {"view": False, "edit": False},
+                "team": {"view": False, "manage": False}
+            },
+            "created_at": datetime.now(timezone.utc).isoformat()
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "name": "Viewer",
+            "description": "Read-only access to data",
+            "color": "#6b7280",
+            "permissions": {
+                "dashboard": {"view": True},
+                "clients": {"view": True, "create": False, "edit": False, "delete": False},
+                "products": {"view": True, "create": False, "edit": False, "delete": False},
+                "orders": {"view": True, "create": False, "edit": False, "delete": False},
+                "pipeline": {"view": True, "create": False, "edit": False, "delete": False},
+                "reports": {"view": True, "export": False},
+                "settings": {"view": False, "edit": False},
+                "team": {"view": False, "manage": False}
+            },
+            "created_at": datetime.now(timezone.utc).isoformat()
+        }
+    ]
+    
+    await db.roles.insert_many(default_roles)
+    return {"message": "Default roles created", "seeded": True, "count": len(default_roles)}
+
 # ============== ROOT ROUTE ==============
 
 @api_router.get("/")
