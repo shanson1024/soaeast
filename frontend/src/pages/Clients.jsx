@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import Layout from '../components/layout/Layout';
 import TopBar from '../components/layout/TopBar';
@@ -9,11 +10,12 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
 import { toast } from 'sonner';
-import { Plus, MoreHorizontal, Users, DollarSign, RefreshCw, UserCheck } from 'lucide-react';
+import { Plus, MoreHorizontal, Users, DollarSign, RefreshCw, UserCheck, ChevronRight } from 'lucide-react';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
 const Clients = () => {
+  const navigate = useNavigate();
   const [clients, setClients] = useState([]);
   const [filteredClients, setFilteredClients] = useState([]);
   const [loading, setLoading] = useState(true);
