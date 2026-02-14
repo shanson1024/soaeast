@@ -414,10 +414,14 @@ const Orders = () => {
                     <td>{order.client_name || 'Unknown'}</td>
                     <td>
                       <span className="text-sm">
-                        {order.line_items?.length || 0} item{(order.line_items?.length || 0) !== 1 ? 's' : ''}
+                        {order.line_items && order.line_items.length > 0 
+                          ? `${order.line_items.length} item${order.line_items.length !== 1 ? 's' : ''}`
+                          : order.products_description 
+                            ? '1 item' 
+                            : '0 items'}
                       </span>
                     </td>
-                    <td className="font-medium">{formatCurrency(order.total)}</td>
+                    <td className="font-medium">{formatCurrency(order.total > 0 ? order.total : (order.amount || 0))}</td>
                     <td>
                       <span className={`px-2.5 py-1 rounded-full text-xs font-medium capitalize ${getStatusColor(order.status)}`}>
                         {order.status}
