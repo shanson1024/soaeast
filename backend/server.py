@@ -35,7 +35,12 @@ security = HTTPBearer()
 
 @app.get("/health")
 async def health_check():
-    """Health check endpoint for Kubernetes probes"""
+    """Health check endpoint for Kubernetes probes (direct access)"""
+    return {"status": "healthy", "service": "soa-crm-api"}
+
+@api_router.get("/health")
+async def api_health_check():
+    """Health check endpoint accessible via /api/health"""
     return {"status": "healthy", "service": "soa-crm-api"}
 
 # Configure logging
