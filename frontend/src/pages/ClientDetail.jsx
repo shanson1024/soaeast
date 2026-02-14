@@ -193,11 +193,205 @@ const ClientDetail = () => {
         breadcrumb="Customers > Client List > Details"
         title=""
         actions={
-          <Button variant="outline" onClick={() => navigate('/clients')} className="btn-secondary">
-            <ArrowLeft size={16} className="mr-2" /> Back to Clients
-          </Button>
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={handleOpenEditModal} className="btn-secondary" data-testid="edit-client-btn">
+              <Pencil size={16} className="mr-2" /> Edit Client
+            </Button>
+            <Button variant="outline" onClick={() => navigate('/clients')} className="btn-secondary">
+              <ArrowLeft size={16} className="mr-2" /> Back to Clients
+            </Button>
+          </div>
         }
       />
+
+      {/* Edit Client Modal */}
+      <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
+        <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Edit Client</DialogTitle>
+            <DialogDescription>Update client information</DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handleUpdateClient} className="space-y-6 mt-4">
+            {/* Basic Info */}
+            <div className="space-y-4">
+              <h4 className="font-medium text-sm text-crm-text-secondary">Basic Information</h4>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label className="label-uppercase">Company Name *</Label>
+                  <Input
+                    data-testid="edit-client-name"
+                    value={editData.name}
+                    onChange={(e) => setEditData({...editData, name: e.target.value})}
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label className="label-uppercase">Email *</Label>
+                  <Input
+                    data-testid="edit-client-email"
+                    type="email"
+                    value={editData.email}
+                    onChange={(e) => setEditData({...editData, email: e.target.value})}
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label className="label-uppercase">Phone</Label>
+                  <Input
+                    data-testid="edit-client-phone"
+                    value={editData.phone}
+                    onChange={(e) => setEditData({...editData, phone: e.target.value})}
+                    placeholder="(555) 123-4567"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label className="label-uppercase">Website</Label>
+                  <Input
+                    data-testid="edit-client-website"
+                    value={editData.website}
+                    onChange={(e) => setEditData({...editData, website: e.target.value})}
+                    placeholder="https://..."
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Contact Person */}
+            <div className="space-y-4">
+              <h4 className="font-medium text-sm text-crm-text-secondary">Primary Contact</h4>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label className="label-uppercase">Contact Name</Label>
+                  <Input
+                    data-testid="edit-contact-person"
+                    value={editData.contact_person}
+                    onChange={(e) => setEditData({...editData, contact_person: e.target.value})}
+                    placeholder="John Smith"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label className="label-uppercase">Title / Position</Label>
+                  <Input
+                    data-testid="edit-contact-title"
+                    value={editData.contact_title}
+                    onChange={(e) => setEditData({...editData, contact_title: e.target.value})}
+                    placeholder="Purchasing Manager"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Address */}
+            <div className="space-y-4">
+              <h4 className="font-medium text-sm text-crm-text-secondary">Address</h4>
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label className="label-uppercase">Street Address</Label>
+                  <Input
+                    data-testid="edit-client-address"
+                    value={editData.address}
+                    onChange={(e) => setEditData({...editData, address: e.target.value})}
+                    placeholder="123 Main Street"
+                  />
+                </div>
+                <div className="grid grid-cols-3 gap-4">
+                  <div className="space-y-2">
+                    <Label className="label-uppercase">City</Label>
+                    <Input
+                      data-testid="edit-client-city"
+                      value={editData.city}
+                      onChange={(e) => setEditData({...editData, city: e.target.value})}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="label-uppercase">State</Label>
+                    <Input
+                      data-testid="edit-client-state"
+                      value={editData.state}
+                      onChange={(e) => setEditData({...editData, state: e.target.value})}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="label-uppercase">Zip Code</Label>
+                    <Input
+                      data-testid="edit-client-zip"
+                      value={editData.zip_code}
+                      onChange={(e) => setEditData({...editData, zip_code: e.target.value})}
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Classification */}
+            <div className="space-y-4">
+              <h4 className="font-medium text-sm text-crm-text-secondary">Classification</h4>
+              <div className="grid grid-cols-3 gap-4">
+                <div className="space-y-2">
+                  <Label className="label-uppercase">Industry</Label>
+                  <Select value={editData.industry} onValueChange={(v) => setEditData({...editData, industry: v})}>
+                    <SelectTrigger data-testid="edit-client-industry">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {industries.map(ind => (
+                        <SelectItem key={ind} value={ind}>{ind}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label className="label-uppercase">Tier</Label>
+                  <Select value={editData.tier} onValueChange={(v) => setEditData({...editData, tier: v})}>
+                    <SelectTrigger data-testid="edit-client-tier">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {tiers.map(t => (
+                        <SelectItem key={t} value={t} className="capitalize">{t}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label className="label-uppercase">Status</Label>
+                  <Select value={editData.status} onValueChange={(v) => setEditData({...editData, status: v})}>
+                    <SelectTrigger data-testid="edit-client-status">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {statuses.map(s => (
+                        <SelectItem key={s} value={s} className="capitalize">{s}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            </div>
+
+            {/* Notes */}
+            <div className="space-y-2">
+              <Label className="label-uppercase">Internal Notes</Label>
+              <textarea
+                data-testid="edit-client-notes"
+                className="flex min-h-[80px] w-full rounded-md border border-crm-border bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                value={editData.notes}
+                onChange={(e) => setEditData({...editData, notes: e.target.value})}
+                placeholder="Additional notes about this client..."
+              />
+            </div>
+
+            <div className="flex gap-2 pt-4">
+              <Button type="button" variant="outline" onClick={() => setIsEditModalOpen(false)} className="flex-1">
+                Cancel
+              </Button>
+              <Button type="submit" className="flex-1 btn-primary" data-testid="save-client-btn">
+                Save Changes
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
 
       {/* Client Header */}
       <div className="crm-card p-6 mb-6" data-testid="client-header">
