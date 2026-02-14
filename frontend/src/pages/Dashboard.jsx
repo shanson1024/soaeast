@@ -9,6 +9,7 @@ import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from '../components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
+import { Popover, PopoverContent, PopoverTrigger } from '../components/ui/popover';
 import { toast } from 'sonner';
 import { TrendingUp, TrendingDown, FileText, Users, DollarSign, Filter, Download, Plus, Package, ClipboardList, Zap } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
@@ -18,6 +19,7 @@ const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 const Dashboard = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [dealFilter, setDealFilter] = useState('all');
   const [stats, setStats] = useState(null);
   const [pipelineSummary, setPipelineSummary] = useState(null);
   const [salesTrend, setSalesTrend] = useState([]);
