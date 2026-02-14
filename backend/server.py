@@ -456,7 +456,7 @@ async def get_products(
             {"description": {"$regex": search, "$options": "i"}}
         ]
     
-    products = await db.products.find(query, {"_id": 0}).sort("created_at", -1).to_list(1000)
+    products = await db.products.find(query, {"_id": 0}).sort("created_at", -1).limit(100).to_list(100)
     return [ProductResponse(**p) for p in products]
 
 @api_router.get("/products/{product_id}", response_model=ProductResponse)
@@ -547,7 +547,7 @@ async def get_orders(
             {"line_items.product_name": {"$regex": search, "$options": "i"}}
         ]
     
-    orders = await db.orders.find(query, {"_id": 0}).sort("created_at", -1).to_list(1000)
+    orders = await db.orders.find(query, {"_id": 0}).sort("created_at", -1).limit(100).to_list(100)
     
     # Batch fetch client names to avoid N+1 query problem
     client_ids = list(set(o.get("client_id") for o in orders if o.get("client_id")))
@@ -686,7 +686,7 @@ async def get_deals(
             {"product_description": {"$regex": search, "$options": "i"}}
         ]
     
-    deals = await db.deals.find(query, {"_id": 0}).sort("date_entered", -1).to_list(1000)
+    deals = await db.deals.find(query, {"_id": 0}).sort("date_entered", -1).limit(100).to_list(100)
     return [DealResponse(**d) for d in deals]
 
 @api_router.get("/deals/{deal_id}", response_model=DealResponse)
@@ -1247,7 +1247,7 @@ async def get_brokers(
             {"email": {"$regex": search, "$options": "i"}}
         ]
     
-    brokers = await db.brokers.find(query, {"_id": 0}).sort("created_at", -1).to_list(1000)
+    brokers = await db.brokers.find(query, {"_id": 0}).sort("created_at", -1).limit(100).to_list(100)
     return [BrokerResponse(**b) for b in brokers]
 
 @api_router.get("/brokers/{broker_id}", response_model=BrokerResponse)
