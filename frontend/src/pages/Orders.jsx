@@ -240,7 +240,7 @@ const Orders = () => {
     total: orders.length,
     open: orders.filter(o => !['delivered', 'cancelled'].includes(o.status)).length,
     delivered: orders.filter(o => o.status === 'delivered').length,
-    totalValue: orders.reduce((sum, o) => sum + (o.total || 0), 0)
+    totalValue: orders.reduce((sum, o) => sum + (o.total > 0 ? o.total : (o.amount || 0)), 0)
   };
 
   if (loading) {
