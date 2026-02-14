@@ -68,8 +68,43 @@ const Orders = () => {
     if (statusFilter !== 'all') {
       filtered = filtered.filter(o => o.status === statusFilter);
     }
+
+    if (priorityFilter !== 'all') {
+      filtered = filtered.filter(o => o.priority === priorityFilter);
+    }
+
+    // Apply sorting
+    if (sortOrder === 'newest') {
+      filtered.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+    } else if (sortOrder === 'oldest') {
+      filtered.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+    } else if (sortOrder === 'amount-high') {
+      filtered.sort((a, b) => b.amount - a.amount);
+    } else if (sortOrder === 'amount-low') {
+      filtered.sort((a, b) => a.amount - b.amount);
+    } else if (sortOrder === 'due-soon') {
+      filtered.sort((a, b) => new Date(a.due_date) - new Date(b.due_date));
+    }
     
     setFilteredOrders(filtered);
+  };
+
+  const handleExportOrders = async () => {
+    try {
+      const response = await axios.get(`${API}/export/orders`);
+      const blob = new Blob([JSON.stringify(response.data.data, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `orders_export_${new Date().toISOString().split('T')[0]}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      toast.success(`${response.data.count} orders exported successfully`);
+    } catch (error) {
+      toast.error('Failed to export orders');
+    }
   };
 
   const handleCreateOrder = async (e) => {
