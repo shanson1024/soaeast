@@ -75,6 +75,15 @@ class ClientCreate(BaseModel):
     total_revenue: float = 0.0
     total_orders: int = 0
     status: str = "active"
+    phone: Optional[str] = None
+    address: Optional[str] = None
+    city: Optional[str] = None
+    state: Optional[str] = None
+    zip_code: Optional[str] = None
+    contact_person: Optional[str] = None
+    contact_title: Optional[str] = None
+    website: Optional[str] = None
+    notes: Optional[str] = None
 
 class ClientResponse(BaseModel):
     id: str
@@ -87,6 +96,15 @@ class ClientResponse(BaseModel):
     last_order_date: Optional[str] = None
     status: str
     created_at: str
+    phone: Optional[str] = None
+    address: Optional[str] = None
+    city: Optional[str] = None
+    state: Optional[str] = None
+    zip_code: Optional[str] = None
+    contact_person: Optional[str] = None
+    contact_title: Optional[str] = None
+    website: Optional[str] = None
+    notes: Optional[str] = None
 
 class ClientUpdate(BaseModel):
     name: Optional[str] = None
@@ -94,6 +112,15 @@ class ClientUpdate(BaseModel):
     industry: Optional[str] = None
     tier: Optional[str] = None
     status: Optional[str] = None
+    phone: Optional[str] = None
+    address: Optional[str] = None
+    city: Optional[str] = None
+    state: Optional[str] = None
+    zip_code: Optional[str] = None
+    contact_person: Optional[str] = None
+    contact_title: Optional[str] = None
+    website: Optional[str] = None
+    notes: Optional[str] = None
 
 class ProductCreate(BaseModel):
     name: str
