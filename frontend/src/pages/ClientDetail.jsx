@@ -479,6 +479,17 @@ const ClientDetail = () => {
                     </div>
                   </div>
                 )}
+                {client.website && (
+                  <div className="flex items-center gap-3">
+                    <Globe size={18} className="text-crm-text-secondary" />
+                    <div>
+                      <p className="text-xs text-crm-text-secondary">Website</p>
+                      <a href={client.website} target="_blank" rel="noopener noreferrer" className="font-medium text-crm-green hover:underline">
+                        {client.website}
+                      </a>
+                    </div>
+                  </div>
+                )}
                 <div className="flex items-center gap-3">
                   <Building size={18} className="text-crm-text-secondary" />
                   <div>
@@ -486,38 +497,71 @@ const ClientDetail = () => {
                     <p className="font-medium">{client.industry}</p>
                   </div>
                 </div>
-                {client.address && (
+                {(client.address || client.city || client.state) && (
                   <div className="flex items-center gap-3">
                     <MapPin size={18} className="text-crm-text-secondary" />
                     <div>
                       <p className="text-xs text-crm-text-secondary">Address</p>
-                      <p className="font-medium">{client.address}</p>
+                      <p className="font-medium">
+                        {client.address && <span>{client.address}<br /></span>}
+                        {client.city && <span>{client.city}, </span>}
+                        {client.state && <span>{client.state} </span>}
+                        {client.zip_code && <span>{client.zip_code}</span>}
+                      </p>
                     </div>
                   </div>
                 )}
               </div>
             </div>
 
-            <div className="crm-card p-6">
-              <h3 className="font-medium text-lg mb-4">Account Summary</h3>
-              <div className="space-y-4">
-                <div className="flex items-center gap-3">
-                  <DollarSign size={18} className="text-crm-green" />
-                  <div>
-                    <p className="text-xs text-crm-text-secondary">Total Revenue</p>
-                    <p className="font-medium text-lg">{formatCurrency(client.total_revenue || 0)}</p>
+            {/* Primary Contact Card */}
+            <div className="space-y-6">
+              {(client.contact_person || client.contact_title) && (
+                <div className="crm-card p-6">
+                  <h3 className="font-medium text-lg mb-4">Primary Contact</h3>
+                  <div className="space-y-4">
+                    {client.contact_person && (
+                      <div className="flex items-center gap-3">
+                        <User size={18} className="text-crm-text-secondary" />
+                        <div>
+                          <p className="text-xs text-crm-text-secondary">Name</p>
+                          <p className="font-medium">{client.contact_person}</p>
+                        </div>
+                      </div>
+                    )}
+                    {client.contact_title && (
+                      <div className="flex items-center gap-3">
+                        <Briefcase size={18} className="text-crm-text-secondary" />
+                        <div>
+                          <p className="text-xs text-crm-text-secondary">Title</p>
+                          <p className="font-medium">{client.contact_title}</p>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
-                <div className="flex items-center gap-3">
-                  <Package size={18} className="text-crm-blue" />
-                  <div>
-                    <p className="text-xs text-crm-text-secondary">Total Orders</p>
-                    <p className="font-medium text-lg">{client.total_orders || 0}</p>
+              )}
+
+              <div className="crm-card p-6">
+                <h3 className="font-medium text-lg mb-4">Account Summary</h3>
+                <div className="space-y-4">
+                  <div className="flex items-center gap-3">
+                    <DollarSign size={18} className="text-crm-green" />
+                    <div>
+                      <p className="text-xs text-crm-text-secondary">Total Revenue</p>
+                      <p className="font-medium text-lg">{formatCurrency(client.total_revenue || 0)}</p>
+                    </div>
                   </div>
-                </div>
-                <div className="flex items-center gap-3">
-                  <Calendar size={18} className="text-crm-purple" />
-                  <div>
+                  <div className="flex items-center gap-3">
+                    <Package size={18} className="text-crm-blue" />
+                    <div>
+                      <p className="text-xs text-crm-text-secondary">Total Orders</p>
+                      <p className="font-medium text-lg">{client.total_orders || 0}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <Calendar size={18} className="text-crm-purple" />
+                    <div>
                     <p className="text-xs text-crm-text-secondary">Last Order</p>
                     <p className="font-medium">{formatDate(client.last_order_date)}</p>
                   </div>
