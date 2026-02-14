@@ -10,7 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
 import { toast } from 'sonner';
-import { Plus, MoreHorizontal, Users, DollarSign, RefreshCw, UserCheck, ChevronRight } from 'lucide-react';
+import { Plus, Users, DollarSign, RefreshCw, UserCheck, ChevronRight } from 'lucide-react';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -23,11 +23,13 @@ const Clients = () => {
   const [activeTab, setActiveTab] = useState('all');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [newClient, setNewClient] = useState({
-    name: '', email: '', industry: 'Technology', tier: 'new', status: 'active'
+    name: '', email: '', phone: '', industry: 'Technology', tier: 'new', status: 'active',
+    address: '', city: '', state: '', zip_code: '', contact_person: '', contact_title: '', website: '', notes: ''
   });
 
-  const industries = ['Healthcare', 'Technology', 'Real Estate', 'Fitness', 'Food & Beverage', 'Consulting', 'Education', 'Insurance', 'Services', 'Automotive'];
+  const industries = ['Healthcare', 'Technology', 'Real Estate', 'Fitness', 'Food & Beverage', 'Consulting', 'Education', 'Insurance', 'Services', 'Automotive', 'Manufacturing', 'Retail', 'Finance'];
   const tiers = ['gold', 'silver', 'bronze', 'new'];
+  const statuses = ['active', 'inactive', 'lead'];
 
   useEffect(() => {
     fetchClients();
