@@ -145,12 +145,21 @@ Build a full-stack CRM application for SOA East LLC, a promotional products comp
 - **Password**: admin123
 
 ## Testing Status
-- Backend: 100% (9/9 client extended tests + 16 existing tests)
+- Backend: 100% (all tests passed)
 - Frontend: 100% (all UI flows verified)
 - Test files: `/app/backend/tests/`
-- Latest test report: `/app/test_reports/iteration_6.json`
+- Latest test report: `/app/test_reports/iteration_7.json`
 
 ## Bug Fixes (Feb 14, 2026)
+
+### Legacy Order Display Fix (Latest)
+- **Issue**: Client orders showing $0 for legacy orders, Items column empty on Orders page
+- **Root Cause**: Orders created before line_items update have `amount` and `products_description` fields instead of `line_items` and `total`
+- **Fix**: 
+  1. Added `products_description` and `amount` optional fields to `OrderResponse` model in backend
+  2. Updated `Orders.jsx` to show `amount` when `total` is 0, and `products_description` when no `line_items`
+  3. Updated `ClientDetail.jsx` Orders tab similarly
+  4. Fixed Total Value stats to include legacy order amounts
 
 ### Reports Page $NaN Fix
 - **Issue**: Total Revenue showed "$NaN" on Reports page
