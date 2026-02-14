@@ -467,46 +467,64 @@ const Orders = () => {
                           <div>
                             <h4 className="font-medium mb-3">Order Items</h4>
                             <div className="bg-white rounded-lg border border-crm-border overflow-hidden">
-                              <table className="w-full text-sm">
-                                <thead className="bg-crm-bg">
-                                  <tr>
-                                    <th className="text-left px-4 py-2">Product</th>
-                                    <th className="text-center px-4 py-2">Qty</th>
-                                    <th className="text-right px-4 py-2">Unit Price</th>
-                                    <th className="text-right px-4 py-2">Line Total</th>
-                                  </tr>
-                                </thead>
-                                <tbody>
-                                  {order.line_items?.map((item, idx) => (
-                                    <tr key={idx} className="border-t border-crm-border">
-                                      <td className="px-4 py-3">{item.product_name}</td>
-                                      <td className="px-4 py-3 text-center">{item.quantity}</td>
-                                      <td className="px-4 py-3 text-right">{formatCurrency(item.unit_price)}</td>
-                                      <td className="px-4 py-3 text-right font-medium">
-                                        {formatCurrency(item.quantity * item.unit_price)}
-                                      </td>
+                              {order.line_items && order.line_items.length > 0 ? (
+                                <table className="w-full text-sm">
+                                  <thead className="bg-crm-bg">
+                                    <tr>
+                                      <th className="text-left px-4 py-2">Product</th>
+                                      <th className="text-center px-4 py-2">Qty</th>
+                                      <th className="text-right px-4 py-2">Unit Price</th>
+                                      <th className="text-right px-4 py-2">Line Total</th>
                                     </tr>
-                                  ))}
-                                </tbody>
-                              </table>
+                                  </thead>
+                                  <tbody>
+                                    {order.line_items.map((item, idx) => (
+                                      <tr key={idx} className="border-t border-crm-border">
+                                        <td className="px-4 py-3">{item.product_name}</td>
+                                        <td className="px-4 py-3 text-center">{item.quantity}</td>
+                                        <td className="px-4 py-3 text-right">{formatCurrency(item.unit_price)}</td>
+                                        <td className="px-4 py-3 text-right font-medium">
+                                          {formatCurrency(item.quantity * item.unit_price)}
+                                        </td>
+                                      </tr>
+                                    ))}
+                                  </tbody>
+                                </table>
+                              ) : order.products_description ? (
+                                <div className="p-4">
+                                  <p className="text-sm font-medium">{order.products_description}</p>
+                                  <p className="text-xs text-crm-text-secondary mt-1">Legacy order format</p>
+                                </div>
+                              ) : (
+                                <div className="p-4 text-crm-text-secondary text-sm">No items</div>
+                              )}
                             </div>
                           </div>
                           {/* Order Summary */}
                           <div>
                             <h4 className="font-medium mb-3">Order Summary</h4>
                             <div className="bg-white rounded-lg border border-crm-border p-4 space-y-3">
-                              <div className="flex justify-between">
-                                <span className="text-crm-text-secondary">Subtotal</span>
-                                <span>{formatCurrency(order.subtotal)}</span>
-                              </div>
-                              <div className="flex justify-between">
-                                <span className="text-crm-text-secondary">Tax ({order.tax_rate}%)</span>
-                                <span>{formatCurrency(order.tax_amount)}</span>
-                              </div>
-                              <div className="border-t border-crm-border pt-3 flex justify-between font-bold text-lg">
-                                <span>Total</span>
-                                <span className="text-crm-green">{formatCurrency(order.total)}</span>
-                              </div>
+                              {order.line_items && order.line_items.length > 0 ? (
+                                <>
+                                  <div className="flex justify-between">
+                                    <span className="text-crm-text-secondary">Subtotal</span>
+                                    <span>{formatCurrency(order.subtotal)}</span>
+                                  </div>
+                                  <div className="flex justify-between">
+                                    <span className="text-crm-text-secondary">Tax ({order.tax_rate}%)</span>
+                                    <span>{formatCurrency(order.tax_amount)}</span>
+                                  </div>
+                                  <div className="border-t border-crm-border pt-3 flex justify-between font-bold text-lg">
+                                    <span>Total</span>
+                                    <span className="text-crm-green">{formatCurrency(order.total)}</span>
+                                  </div>
+                                </>
+                              ) : (
+                                <div className="flex justify-between font-bold text-lg">
+                                  <span>Order Amount</span>
+                                  <span className="text-crm-green">{formatCurrency(order.amount || 0)}</span>
+                                </div>
+                              )}
                               {order.notes && (
                                 <div className="pt-3 border-t border-crm-border">
                                   <p className="text-xs text-crm-text-secondary mb-1">Notes</p>
