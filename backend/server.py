@@ -319,7 +319,7 @@ async def get_clients(
             {"email": {"$regex": search, "$options": "i"}}
         ]
     
-    clients = await db.clients.find(query, {"_id": 0}).sort("created_at", -1).to_list(1000)
+    clients = await db.clients.find(query, {"_id": 0}).sort("created_at", -1).limit(100).to_list(100)
     return [ClientResponse(**c) for c in clients]
 
 @api_router.get("/clients/{client_id}", response_model=ClientResponse)
