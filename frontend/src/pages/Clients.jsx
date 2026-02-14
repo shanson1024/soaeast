@@ -272,7 +272,12 @@ const Clients = () => {
             </thead>
             <tbody>
               {filteredClients.map((client) => (
-                <tr key={client.id}>
+                <tr 
+                  key={client.id} 
+                  onClick={() => navigate(`/clients/${client.id}`)}
+                  className="cursor-pointer hover:bg-crm-green-light/20 transition-colors"
+                  data-testid={`client-row-${client.id}`}
+                >
                   <td>
                     <div className="flex items-center gap-3">
                       <div className="w-9 h-9 bg-crm-green-light rounded-full flex items-center justify-center">
@@ -305,10 +310,10 @@ const Clients = () => {
                   <td>
                     <button
                       data-testid={`client-menu-${client.id}`}
-                      onClick={() => handleDeleteClient(client.id)}
+                      onClick={(e) => { e.stopPropagation(); handleDeleteClient(client.id); }}
                       className="p-2 hover:bg-crm-hover rounded-lg transition-colors"
                     >
-                      <MoreHorizontal size={16} className="text-crm-text-secondary" />
+                      <ChevronRight size={16} className="text-crm-text-secondary" />
                     </button>
                   </td>
                 </tr>
