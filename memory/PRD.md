@@ -108,3 +108,34 @@ Build a full-stack CRM application for SOA East LLC, a promotional products comp
 - Backend: 100% (16/16 tests passed)
 - Frontend: 100% (all UI flows verified)
 - Test files: `/app/backend/tests/`
+- Latest test report: `/app/test_reports/iteration_5.json`
+
+## Bug Fixes (Feb 14, 2026)
+
+### Reports Page $NaN Fix
+- **Issue**: Total Revenue showed "$NaN" on Reports page
+- **Root Cause**: `Reports.jsx` line 54 was using `o.amount` but orders have `total` field
+- **Fix**: Changed `orders.reduce((acc, o) => acc + o.amount, 0)` to `orders.reduce((acc, o) => acc + (o.total || 0), 0)`
+
+### Roles Page Verification
+- **Issue**: User reported Roles page was empty
+- **Status**: VERIFIED WORKING - Page correctly displays 4 roles (Administrator, Sales Manager, Account Executive, Viewer)
+- **Cause**: Was likely a temporary cache/authentication issue
+
+### React Table Hydration Warning
+- **Issue**: Console warning about `<span>` not being valid child of `<tbody>`
+- **Cause**: Emergent platform's visual editor (`emergent-main.js`) injects `<span data-ve-dynamic>` wrapper elements around dynamic content
+- **Status**: NOT A CODE BUG - External tooling issue, non-blocking
+
+## Backlog
+
+### P1 - Next Features
+- Implement real-time chat for Messages section
+- Add analytics tracking per Channel
+
+### P2 - Future Features  
+- Integrate email notifications (SendGrid/Resend)
+- Integrate payment processor (Stripe/PayPal)
+
+### Tech Debt
+- Refactor monolithic `backend/server.py` into modular structure
