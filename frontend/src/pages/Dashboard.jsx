@@ -140,6 +140,28 @@ const Dashboard = () => {
     return badges[stage] || 'badge-pending';
   };
 
+  const handleExportDeals = async () => {
+    try {
+      const response = await axios.get(`${API}/export/deals`);
+      const blob = new Blob([JSON.stringify(response.data.data, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `deals_export_${new Date().toISOString().split('T')[0]}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      toast.success(`${response.data.count} deals exported successfully`);
+    } catch (error) {
+      toast.error('Failed to export deals');
+    }
+  };
+
+  const filteredDeals = dealFilter === 'all' 
+    ? recentDeals 
+    : recentDeals.filter(d => d.stage === dealFilter);
+
   if (loading) {
     return (
       <Layout>
