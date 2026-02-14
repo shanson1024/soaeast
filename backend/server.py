@@ -1279,6 +1279,319 @@ async def reset_demo_data(current_user: dict = Depends(get_current_user)):
         }
     }
 
+# ============== MESSAGES ==============
+
+class MessageCreate(BaseModel):
+    recipient_id: Optional[str] = None
+    recipient_name: str
+    subject: str
+    content: str
+    message_type: str = "internal"  # internal, client, system
+
+class MessageResponse(BaseModel):
+    id: str
+    sender_id: str
+    sender_name: str
+    recipient_id: Optional[str]
+    recipient_name: str
+    subject: str
+    content: str
+    message_type: str
+    is_read: bool
+    created_at: str
+
+@api_router.get("/messages", response_model=List[MessageResponse])
+async def get_messages(
+    message_type: Optional[str] = None,
+    is_read: Optional[bool] = None,
+    current_user: dict = Depends(get_current_user)
+):
+    query = {"$or": [{"sender_id": current_user["id"]}, {"recipient_id": current_user["id"]}]}
+    if message_type:
+        query["message_type"] = message_type
+    if is_read is not None:
+        query["is_read"] = is_read
+    
+    messages = await db.messages.find(query, {"_id": 0}).sort("created_at", -1).to_list(100)
+    return [MessageResponse(**m) for m in messages]
+
+@api_router.post("/messages", response_model=MessageResponse)
+async def create_message(message: MessageCreate, current_user: dict = Depends(get_current_user)):
+    message_id = str(uuid.uuid4())
+    now = datetime.now(timezone.utc).isoformat()
+    message_doc = {
+        "id": message_id,
+        "sender_id": current_user["id"],
+        "sender_name": current_user["name"],
+        **message.model_dump(),
+        "is_read": False,
+        "created_at": now
+    }
+    await db.messages.insert_one(message_doc)
+    return MessageResponse(**{k: v for k, v in message_doc.items() if k != "_id"})
+
+@api_router.put("/messages/{message_id}/read")
+async def mark_message_read(message_id: str, current_user: dict = Depends(get_current_user)):
+    result = await db.messages.update_one({"id": message_id}, {"$set": {"is_read": True}})
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Message not found")
+    return {"message": "Message marked as read"}
+
+@api_router.delete("/messages/{message_id}")
+async def delete_message(message_id: str, current_user: dict = Depends(get_current_user)):
+    result = await db.messages.delete_one({"id": message_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Message not found")
+    return {"message": "Message deleted"}
+
+# ============== CHANNELS ==============
+
+class ChannelCreate(BaseModel):
+    name: str
+    channel_type: str  # direct, retail, online, wholesale, referral
+    description: str = ""
+    contact_email: str = ""
+    commission_rate: float = 0.0
+    status: str = "active"
+
+class ChannelResponse(BaseModel):
+    id: str
+    name: str
+    channel_type: str
+    description: str
+    contact_email: str
+    commission_rate: float
+    status: str
+    total_revenue: float
+    total_orders: int
+    created_at: str
+
+class ChannelUpdate(BaseModel):
+    name: Optional[str] = None
+    channel_type: Optional[str] = None
+    description: Optional[str] = None
+    contact_email: Optional[str] = None
+    commission_rate: Optional[float] = None
+    status: Optional[str] = None
+
+@api_router.get("/channels", response_model=List[ChannelResponse])
+async def get_channels(
+    status: Optional[str] = None,
+    channel_type: Optional[str] = None,
+    current_user: dict = Depends(get_current_user)
+):
+    query = {}
+    if status:
+        query["status"] = status
+    if channel_type:
+        query["channel_type"] = channel_type
+    
+    channels = await db.channels.find(query, {"_id": 0}).sort("created_at", -1).to_list(100)
+    return [ChannelResponse(**c) for c in channels]
+
+@api_router.post("/channels", response_model=ChannelResponse)
+async def create_channel(channel: ChannelCreate, current_user: dict = Depends(get_current_user)):
+    channel_id = str(uuid.uuid4())
+    now = datetime.now(timezone.utc).isoformat()
+    channel_doc = {
+        "id": channel_id,
+        **channel.model_dump(),
+        "total_revenue": 0,
+        "total_orders": 0,
+        "created_at": now
+    }
+    await db.channels.insert_one(channel_doc)
+    return ChannelResponse(**{k: v for k, v in channel_doc.items() if k != "_id"})
+
+@api_router.put("/channels/{channel_id}", response_model=ChannelResponse)
+async def update_channel(channel_id: str, update: ChannelUpdate, current_user: dict = Depends(get_current_user)):
+    update_data = {k: v for k, v in update.model_dump().items() if v is not None}
+    if not update_data:
+        raise HTTPException(status_code=400, detail="No fields to update")
+    
+    result = await db.channels.update_one({"id": channel_id}, {"$set": update_data})
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Channel not found")
+    
+    channel = await db.channels.find_one({"id": channel_id}, {"_id": 0})
+    return ChannelResponse(**channel)
+
+@api_router.delete("/channels/{channel_id}")
+async def delete_channel(channel_id: str, current_user: dict = Depends(get_current_user)):
+    result = await db.channels.delete_one({"id": channel_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Channel not found")
+    return {"message": "Channel deleted"}
+
+# ============== INTEGRATIONS ==============
+
+class IntegrationCreate(BaseModel):
+    name: str
+    integration_type: str  # payment, email, shipping, analytics, crm
+    provider: str
+    api_key: str = ""
+    webhook_url: str = ""
+    settings: dict = {}
+    status: str = "inactive"
+
+class IntegrationResponse(BaseModel):
+    id: str
+    name: str
+    integration_type: str
+    provider: str
+    status: str
+    settings: dict
+    last_sync: Optional[str]
+    created_at: str
+
+class IntegrationUpdate(BaseModel):
+    name: Optional[str] = None
+    api_key: Optional[str] = None
+    webhook_url: Optional[str] = None
+    settings: Optional[dict] = None
+    status: Optional[str] = None
+
+@api_router.get("/integrations", response_model=List[IntegrationResponse])
+async def get_integrations(current_user: dict = Depends(get_current_user)):
+    integrations = await db.integrations.find({}, {"_id": 0, "api_key": 0}).to_list(100)
+    return [IntegrationResponse(**i) for i in integrations]
+
+@api_router.post("/integrations", response_model=IntegrationResponse)
+async def create_integration(integration: IntegrationCreate, current_user: dict = Depends(get_current_user)):
+    integration_id = str(uuid.uuid4())
+    now = datetime.now(timezone.utc).isoformat()
+    integration_doc = {
+        "id": integration_id,
+        **integration.model_dump(),
+        "last_sync": None,
+        "created_at": now
+    }
+    await db.integrations.insert_one(integration_doc)
+    response_doc = {k: v for k, v in integration_doc.items() if k not in ["_id", "api_key", "webhook_url"]}
+    return IntegrationResponse(**response_doc)
+
+@api_router.put("/integrations/{integration_id}", response_model=IntegrationResponse)
+async def update_integration(integration_id: str, update: IntegrationUpdate, current_user: dict = Depends(get_current_user)):
+    update_data = {k: v for k, v in update.model_dump().items() if v is not None}
+    if not update_data:
+        raise HTTPException(status_code=400, detail="No fields to update")
+    
+    result = await db.integrations.update_one({"id": integration_id}, {"$set": update_data})
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Integration not found")
+    
+    integration = await db.integrations.find_one({"id": integration_id}, {"_id": 0, "api_key": 0, "webhook_url": 0})
+    return IntegrationResponse(**integration)
+
+@api_router.delete("/integrations/{integration_id}")
+async def delete_integration(integration_id: str, current_user: dict = Depends(get_current_user)):
+    result = await db.integrations.delete_one({"id": integration_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Integration not found")
+    return {"message": "Integration deleted"}
+
+@api_router.post("/integrations/{integration_id}/test")
+async def test_integration(integration_id: str, current_user: dict = Depends(get_current_user)):
+    integration = await db.integrations.find_one({"id": integration_id}, {"_id": 0})
+    if not integration:
+        raise HTTPException(status_code=404, detail="Integration not found")
+    
+    # Simulate test - in production would actually test the API
+    await db.integrations.update_one(
+        {"id": integration_id}, 
+        {"$set": {"last_sync": datetime.now(timezone.utc).isoformat(), "status": "active"}}
+    )
+    return {"success": True, "message": f"Integration {integration['name']} tested successfully"}
+
+# ============== SETTINGS ==============
+
+class SettingsUpdate(BaseModel):
+    company_name: Optional[str] = None
+    company_email: Optional[str] = None
+    company_phone: Optional[str] = None
+    company_address: Optional[str] = None
+    industry: Optional[str] = None
+    timezone: Optional[str] = None
+    date_format: Optional[str] = None
+    currency: Optional[str] = None
+    tax_rate: Optional[float] = None
+    notifications: Optional[dict] = None
+    email_settings: Optional[dict] = None
+    security_settings: Optional[dict] = None
+
+@api_router.get("/settings")
+async def get_settings(current_user: dict = Depends(get_current_user)):
+    settings = await db.settings.find_one({"type": "global"}, {"_id": 0})
+    if not settings:
+        # Return default settings
+        return {
+            "company_name": "SOA East LLC",
+            "company_email": "contact@soaeast.com",
+            "company_phone": "+1 (555) 123-4567",
+            "company_address": "123 Business Ave, Suite 100, City, State 12345",
+            "industry": "Promotional Products",
+            "timezone": "America/New_York",
+            "date_format": "MM/DD/YYYY",
+            "currency": "USD",
+            "tax_rate": 8.5,
+            "notifications": {
+                "push": True,
+                "desktop": False,
+                "sound": True
+            },
+            "email_settings": {
+                "order_updates": True,
+                "new_clients": True,
+                "pipeline_movement": False,
+                "weekly_reports": True
+            },
+            "security_settings": {
+                "two_factor": False,
+                "session_timeout": True
+            }
+        }
+    return settings
+
+@api_router.put("/settings")
+async def update_settings(update: SettingsUpdate, current_user: dict = Depends(get_current_user)):
+    update_data = {k: v for k, v in update.model_dump().items() if v is not None}
+    if not update_data:
+        raise HTTPException(status_code=400, detail="No fields to update")
+    
+    update_data["updated_at"] = datetime.now(timezone.utc).isoformat()
+    update_data["updated_by"] = current_user["id"]
+    
+    await db.settings.update_one(
+        {"type": "global"},
+        {"$set": update_data},
+        upsert=True
+    )
+    
+    settings = await db.settings.find_one({"type": "global"}, {"_id": 0})
+    return settings
+
+# ============== EXPORT ENDPOINTS ==============
+
+@api_router.get("/export/clients")
+async def export_clients(current_user: dict = Depends(get_current_user)):
+    clients = await db.clients.find({}, {"_id": 0}).to_list(1000)
+    return {"data": clients, "count": len(clients), "type": "clients"}
+
+@api_router.get("/export/orders")
+async def export_orders(current_user: dict = Depends(get_current_user)):
+    orders = await db.orders.find({}, {"_id": 0}).to_list(1000)
+    return {"data": orders, "count": len(orders), "type": "orders"}
+
+@api_router.get("/export/deals")
+async def export_deals(current_user: dict = Depends(get_current_user)):
+    deals = await db.deals.find({}, {"_id": 0}).to_list(1000)
+    return {"data": deals, "count": len(deals), "type": "deals"}
+
+@api_router.get("/export/products")
+async def export_products(current_user: dict = Depends(get_current_user)):
+    products = await db.products.find({}, {"_id": 0}).to_list(1000)
+    return {"data": products, "count": len(products), "type": "products"}
+
 # ============== ROOT ROUTE ==============
 
 @api_router.get("/")
