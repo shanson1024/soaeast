@@ -562,19 +562,28 @@ const ClientDetail = () => {
                   <div className="flex items-center gap-3">
                     <Calendar size={18} className="text-crm-purple" />
                     <div>
-                    <p className="text-xs text-crm-text-secondary">Last Order</p>
-                    <p className="font-medium">{formatDate(client.last_order_date)}</p>
+                      <p className="text-xs text-crm-text-secondary">Last Order</p>
+                      <p className="font-medium">{formatDate(client.last_order_date)}</p>
+                    </div>
                   </div>
-                </div>
-                <div className="flex items-center gap-3">
-                  <Clock size={18} className="text-crm-warning" />
-                  <div>
-                    <p className="text-xs text-crm-text-secondary">Client Since</p>
-                    <p className="font-medium">{formatDate(client.created_at)}</p>
+                  <div className="flex items-center gap-3">
+                    <Clock size={18} className="text-crm-warning" />
+                    <div>
+                      <p className="text-xs text-crm-text-secondary">Client Since</p>
+                      <p className="font-medium">{formatDate(client.created_at)}</p>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
+
+            {/* Internal Notes */}
+            {client.notes && (
+              <div className="crm-card p-6 lg:col-span-2">
+                <h3 className="font-medium text-lg mb-4">Internal Notes</h3>
+                <p className="text-crm-text-secondary whitespace-pre-wrap">{client.notes}</p>
+              </div>
+            )}
           </div>
         </TabsContent>
 
