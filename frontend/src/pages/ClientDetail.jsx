@@ -601,7 +601,7 @@ const ClientDetail = () => {
                   <thead>
                     <tr>
                       <th>Order ID</th>
-                      <th>Items</th>
+                      <th>Items / Description</th>
                       <th>Total</th>
                       <th>Status</th>
                       <th>Due Date</th>
@@ -614,14 +614,22 @@ const ClientDetail = () => {
                         <td className="font-mono font-medium">{order.order_id}</td>
                         <td>
                           <div className="max-w-xs">
-                            {order.line_items?.map((item, idx) => (
-                              <div key={idx} className="text-sm">
-                                {item.product_name} x{item.quantity} @ {formatCurrency(item.unit_price)}
-                              </div>
-                            ))}
+                            {order.line_items && order.line_items.length > 0 ? (
+                              order.line_items.map((item, idx) => (
+                                <div key={idx} className="text-sm">
+                                  {item.product_name} x{item.quantity} @ {formatCurrency(item.unit_price)}
+                                </div>
+                              ))
+                            ) : order.products_description ? (
+                              <div className="text-sm">{order.products_description}</div>
+                            ) : (
+                              <span className="text-crm-text-secondary text-sm">-</span>
+                            )}
                           </div>
                         </td>
-                        <td className="font-medium">{formatCurrency(order.total || 0)}</td>
+                        <td className="font-medium">
+                          {formatCurrency(order.total > 0 ? order.total : (order.amount || 0))}
+                        </td>
                         <td>
                           <span className={`px-2.5 py-1 rounded-full text-xs font-medium capitalize ${getOrderStatusColor(order.status)}`}>
                             {order.status}
