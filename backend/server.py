@@ -183,6 +183,9 @@ class OrderResponse(BaseModel):
     priority: str
     notes: str = ""
     created_at: str
+    # Legacy fields for backward compatibility
+    products_description: Optional[str] = None
+    amount: Optional[float] = None
 
 class OrderUpdate(BaseModel):
     line_items: Optional[List[LineItem]] = None
