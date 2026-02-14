@@ -357,6 +357,80 @@ async def delete_client(client_id: str, current_user: dict = Depends(get_current
         raise HTTPException(status_code=404, detail="Client not found")
     return {"message": "Client deleted"}
 
+# ============== CLIENT DETAIL ROUTES ==============
+
+class ClientNoteCreate(BaseModel):
+    content: str
+    note_type: str = "general"  # general, call, meeting, email, task
+
+class ClientNoteResponse(BaseModel):
+    id: str
+    client_id: str
+    content: str
+    note_type: str
+    created_by: str
+    created_by_name: str
+    created_at: str
+
+@api_router.get("/clients/{client_id}/orders")
+async def get_client_orders(client_id: str, current_user: dict = Depends(get_current_user)):
+    """Get all orders for a specific client"""
+    orders = await db.orders.find({"client_id": client_id}, {"_id": 0}).sort("created_at", -1).to_list(100)
+    
+    # Enrich orders with calculated totals
+    for order in orders:
+        order = enrich_order_response(order)
+        order["client_name"] = None
+    
+    return orders
+
+@api_router.get("/clients/{client_id}/deals")
+async def get_client_deals(client_id: str, current_user: dict = Depends(get_current_user)):
+    """Get all deals/pipeline items for a specific client"""
+    # First get client name
+    client = await db.clients.find_one({"id": client_id}, {"_id": 0, "name": 1})
+    if not client:
+        raise HTTPException(status_code=404, detail="Client not found")
+    
+    deals = await db.deals.find({"client_name": client["name"]}, {"_id": 0}).sort("date_entered", -1).to_list(100)
+    return deals
+
+@api_router.get("/clients/{client_id}/notes", response_model=List[ClientNoteResponse])
+async def get_client_notes(client_id: str, current_user: dict = Depends(get_current_user)):
+    """Get all notes/activity log for a specific client"""
+    notes = await db.client_notes.find({"client_id": client_id}, {"_id": 0}).sort("created_at", -1).to_list(100)
+    return [ClientNoteResponse(**n) for n in notes]
+
+@api_router.post("/clients/{client_id}/notes", response_model=ClientNoteResponse)
+async def create_client_note(client_id: str, note: ClientNoteCreate, current_user: dict = Depends(get_current_user)):
+    """Add a note to client's activity log"""
+    # Verify client exists
+    client = await db.clients.find_one({"id": client_id}, {"_id": 0})
+    if not client:
+        raise HTTPException(status_code=404, detail="Client not found")
+    
+    note_id = str(uuid.uuid4())
+    now = datetime.now(timezone.utc).isoformat()
+    note_doc = {
+        "id": note_id,
+        "client_id": client_id,
+        "content": note.content,
+        "note_type": note.note_type,
+        "created_by": current_user["id"],
+        "created_by_name": current_user["name"],
+        "created_at": now
+    }
+    await db.client_notes.insert_one(note_doc)
+    return ClientNoteResponse(**{k: v for k, v in note_doc.items() if k != "_id"})
+
+@api_router.delete("/clients/{client_id}/notes/{note_id}")
+async def delete_client_note(client_id: str, note_id: str, current_user: dict = Depends(get_current_user)):
+    """Delete a note from client's activity log"""
+    result = await db.client_notes.delete_one({"id": note_id, "client_id": client_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Note not found")
+    return {"message": "Note deleted"}
+
 # ============== PRODUCT ROUTES ==============
 
 @api_router.get("/products", response_model=List[ProductResponse])
