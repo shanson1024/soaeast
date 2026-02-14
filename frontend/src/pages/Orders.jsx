@@ -21,6 +21,8 @@ const Orders = () => {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [priorityFilter, setPriorityFilter] = useState('all');
+  const [sortOrder, setSortOrder] = useState('newest');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [newOrder, setNewOrder] = useState({
     client_id: '', products_description: '', amount: '', status: 'draft', priority: 'medium', due_date: ''
