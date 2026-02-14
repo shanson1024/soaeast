@@ -138,61 +138,183 @@ const Clients = () => {
                 <Plus size={16} className="mr-2" /> Add Client
               </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-md">
+            <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
               <DialogHeader>
                 <DialogTitle>Add New Client</DialogTitle>
                 <DialogDescription>Fill in the details below to add a new client to your CRM.</DialogDescription>
               </DialogHeader>
-              <form onSubmit={handleCreateClient} className="space-y-4 mt-4">
-                <div className="space-y-2">
-                  <Label className="label-uppercase">Name</Label>
-                  <Input
-                    data-testid="client-name-input"
-                    value={newClient.name}
-                    onChange={(e) => setNewClient({...newClient, name: e.target.value})}
-                    placeholder="Company name"
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label className="label-uppercase">Email</Label>
-                  <Input
-                    data-testid="client-email-input"
-                    type="email"
-                    value={newClient.email}
-                    onChange={(e) => setNewClient({...newClient, email: e.target.value})}
-                    placeholder="contact@company.com"
-                    required
-                  />
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label className="label-uppercase">Industry</Label>
-                    <Select value={newClient.industry} onValueChange={(v) => setNewClient({...newClient, industry: v})}>
-                      <SelectTrigger data-testid="client-industry-select">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {industries.map(ind => (
-                          <SelectItem key={ind} value={ind}>{ind}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label className="label-uppercase">Tier</Label>
-                    <Select value={newClient.tier} onValueChange={(v) => setNewClient({...newClient, tier: v})}>
-                      <SelectTrigger data-testid="client-tier-select">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {tiers.map(tier => (
-                          <SelectItem key={tier} value={tier} className="capitalize">{tier}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+              <form onSubmit={handleCreateClient} className="space-y-6 mt-4">
+                {/* Basic Info */}
+                <div className="space-y-4">
+                  <h4 className="font-medium text-sm text-crm-text-secondary">Basic Information</h4>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label className="label-uppercase">Company Name *</Label>
+                      <Input
+                        data-testid="client-name-input"
+                        value={newClient.name}
+                        onChange={(e) => setNewClient({...newClient, name: e.target.value})}
+                        placeholder="Company name"
+                        required
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="label-uppercase">Email *</Label>
+                      <Input
+                        data-testid="client-email-input"
+                        type="email"
+                        value={newClient.email}
+                        onChange={(e) => setNewClient({...newClient, email: e.target.value})}
+                        placeholder="contact@company.com"
+                        required
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="label-uppercase">Phone</Label>
+                      <Input
+                        data-testid="client-phone-input"
+                        value={newClient.phone}
+                        onChange={(e) => setNewClient({...newClient, phone: e.target.value})}
+                        placeholder="(555) 123-4567"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="label-uppercase">Website</Label>
+                      <Input
+                        data-testid="client-website-input"
+                        value={newClient.website}
+                        onChange={(e) => setNewClient({...newClient, website: e.target.value})}
+                        placeholder="https://..."
+                      />
+                    </div>
                   </div>
                 </div>
+
+                {/* Primary Contact */}
+                <div className="space-y-4">
+                  <h4 className="font-medium text-sm text-crm-text-secondary">Primary Contact</h4>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label className="label-uppercase">Contact Name</Label>
+                      <Input
+                        data-testid="client-contact-input"
+                        value={newClient.contact_person}
+                        onChange={(e) => setNewClient({...newClient, contact_person: e.target.value})}
+                        placeholder="John Smith"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="label-uppercase">Title</Label>
+                      <Input
+                        data-testid="client-title-input"
+                        value={newClient.contact_title}
+                        onChange={(e) => setNewClient({...newClient, contact_title: e.target.value})}
+                        placeholder="Purchasing Manager"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Address */}
+                <div className="space-y-4">
+                  <h4 className="font-medium text-sm text-crm-text-secondary">Address</h4>
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <Label className="label-uppercase">Street Address</Label>
+                      <Input
+                        data-testid="client-address-input"
+                        value={newClient.address}
+                        onChange={(e) => setNewClient({...newClient, address: e.target.value})}
+                        placeholder="123 Main Street"
+                      />
+                    </div>
+                    <div className="grid grid-cols-3 gap-4">
+                      <div className="space-y-2">
+                        <Label className="label-uppercase">City</Label>
+                        <Input
+                          data-testid="client-city-input"
+                          value={newClient.city}
+                          onChange={(e) => setNewClient({...newClient, city: e.target.value})}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label className="label-uppercase">State</Label>
+                        <Input
+                          data-testid="client-state-input"
+                          value={newClient.state}
+                          onChange={(e) => setNewClient({...newClient, state: e.target.value})}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label className="label-uppercase">Zip Code</Label>
+                        <Input
+                          data-testid="client-zip-input"
+                          value={newClient.zip_code}
+                          onChange={(e) => setNewClient({...newClient, zip_code: e.target.value})}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Classification */}
+                <div className="space-y-4">
+                  <h4 className="font-medium text-sm text-crm-text-secondary">Classification</h4>
+                  <div className="grid grid-cols-3 gap-4">
+                    <div className="space-y-2">
+                      <Label className="label-uppercase">Industry</Label>
+                      <Select value={newClient.industry} onValueChange={(v) => setNewClient({...newClient, industry: v})}>
+                        <SelectTrigger data-testid="client-industry-select">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {industries.map(ind => (
+                            <SelectItem key={ind} value={ind}>{ind}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="label-uppercase">Tier</Label>
+                      <Select value={newClient.tier} onValueChange={(v) => setNewClient({...newClient, tier: v})}>
+                        <SelectTrigger data-testid="client-tier-select">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {tiers.map(tier => (
+                            <SelectItem key={tier} value={tier} className="capitalize">{tier}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="label-uppercase">Status</Label>
+                      <Select value={newClient.status} onValueChange={(v) => setNewClient({...newClient, status: v})}>
+                        <SelectTrigger data-testid="client-status-select">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {statuses.map(s => (
+                            <SelectItem key={s} value={s} className="capitalize">{s}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Notes */}
+                <div className="space-y-2">
+                  <Label className="label-uppercase">Internal Notes</Label>
+                  <textarea
+                    data-testid="client-notes-input"
+                    className="flex min-h-[80px] w-full rounded-md border border-crm-border bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    value={newClient.notes}
+                    onChange={(e) => setNewClient({...newClient, notes: e.target.value})}
+                    placeholder="Additional notes about this client..."
+                  />
+                </div>
+
                 <Button type="submit" data-testid="client-submit-btn" className="w-full btn-primary">
                   Create Client
                 </Button>
