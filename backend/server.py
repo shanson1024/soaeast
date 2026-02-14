@@ -1013,6 +1013,158 @@ async def seed_default_roles():
     await db.roles.insert_many(default_roles)
     return {"message": "Default roles created", "seeded": True, "count": len(default_roles)}
 
+# Reset and create clean demo data
+@api_router.post("/reset-demo")
+async def reset_demo_data(current_user: dict = Depends(get_current_user)):
+    """Clear all data and create clean demo data with one deal per stage"""
+    
+    # Clear existing data (except users and roles)
+    await db.deals.delete_many({})
+    await db.orders.delete_many({})
+    await db.clients.delete_many({})
+    await db.products.delete_many({})
+    
+    now = datetime.now(timezone.utc)
+    
+    # Create 5 clients (one for each deal stage)
+    clients_data = [
+        {"id": str(uuid.uuid4()), "name": "TechStart Inc", "email": "sales@techstart.com", "industry": "Technology", "tier": "new", "total_revenue": 0, "total_orders": 0, "status": "active", "last_order_date": None, "created_at": (now - timedelta(days=30)).isoformat()},
+        {"id": str(uuid.uuid4()), "name": "Premier Healthcare", "email": "orders@premierhc.com", "industry": "Healthcare", "tier": "silver", "total_revenue": 0, "total_orders": 0, "status": "active", "last_order_date": None, "created_at": (now - timedelta(days=45)).isoformat()},
+        {"id": str(uuid.uuid4()), "name": "Urban Fitness", "email": "marketing@urbanfit.com", "industry": "Fitness", "tier": "bronze", "total_revenue": 0, "total_orders": 0, "status": "active", "last_order_date": None, "created_at": (now - timedelta(days=60)).isoformat()},
+        {"id": str(uuid.uuid4()), "name": "AutoMax Dealers", "email": "promo@automax.com", "industry": "Automotive", "tier": "gold", "total_revenue": 15000, "total_orders": 2, "status": "active", "last_order_date": (now - timedelta(days=5)).isoformat(), "created_at": (now - timedelta(days=90)).isoformat()},
+        {"id": str(uuid.uuid4()), "name": "Budget Corp", "email": "info@budgetcorp.com", "industry": "Services", "tier": "new", "total_revenue": 0, "total_orders": 0, "status": "active", "last_order_date": None, "created_at": (now - timedelta(days=20)).isoformat()},
+    ]
+    await db.clients.insert_many(clients_data)
+    
+    # Create products
+    products_data = [
+        {"id": str(uuid.uuid4()), "name": "Custom Polo Shirts", "category": "apparel", "description": "Premium embroidered polo shirts with company logo", "base_price": 28.99, "badge": "popular", "total_orders": 5, "total_clients": 3, "margin_percent": 35, "image_url": None, "created_at": now.isoformat()},
+        {"id": str(uuid.uuid4()), "name": "Branded Tote Bags", "category": "bags", "description": "Eco-friendly canvas tote bags with custom print", "base_price": 15.99, "badge": None, "total_orders": 3, "total_clients": 2, "margin_percent": 45, "image_url": None, "created_at": now.isoformat()},
+        {"id": str(uuid.uuid4()), "name": "Insulated Tumblers", "category": "drinkware", "description": "20oz stainless steel tumblers with laser engraving", "base_price": 22.99, "badge": "new", "total_orders": 4, "total_clients": 3, "margin_percent": 40, "image_url": None, "created_at": now.isoformat()},
+        {"id": str(uuid.uuid4()), "name": "Executive Notebooks", "category": "office", "description": "Leather-bound journals with embossed logo", "base_price": 18.99, "badge": None, "total_orders": 2, "total_clients": 2, "margin_percent": 50, "image_url": None, "created_at": now.isoformat()},
+        {"id": str(uuid.uuid4()), "name": "Welcome Gift Sets", "category": "gifts", "description": "Curated gift box with mug, notebook, and pen", "base_price": 45.99, "badge": "popular", "total_orders": 3, "total_clients": 2, "margin_percent": 38, "image_url": None, "created_at": now.isoformat()},
+    ]
+    await db.products.insert_many(products_data)
+    
+    # Create 5 deals - one for each stage
+    deals_data = [
+        {
+            "id": str(uuid.uuid4()),
+            "client_name": "TechStart Inc",
+            "client_id": clients_data[0]["id"],
+            "amount": 8500,
+            "product_description": "500 Custom Polo Shirts for company rebrand",
+            "stage": "prospecting",
+            "priority": "medium",
+            "tags": ["Apparel"],
+            "owner_initials": "SH",
+            "owner_color": "#2d6a4f",
+            "date_entered": (now - timedelta(days=3)).isoformat(),
+            "date_closed": None,
+            "loss_reason": None
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "client_name": "Premier Healthcare",
+            "client_id": clients_data[1]["id"],
+            "amount": 12000,
+            "product_description": "Welcome kits for new employees - tumblers & notebooks",
+            "stage": "proposal",
+            "priority": "high",
+            "tags": ["Drinkware", "Office"],
+            "owner_initials": "JR",
+            "owner_color": "#4a5fd7",
+            "date_entered": (now - timedelta(days=7)).isoformat(),
+            "date_closed": None,
+            "loss_reason": None
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "client_name": "Urban Fitness",
+            "client_id": clients_data[2]["id"],
+            "amount": 6500,
+            "product_description": "Branded tote bags for gym membership drive",
+            "stage": "negotiation",
+            "priority": "medium",
+            "tags": ["Bags"],
+            "owner_initials": "MK",
+            "owner_color": "#7c3aed",
+            "date_entered": (now - timedelta(days=14)).isoformat(),
+            "date_closed": None,
+            "loss_reason": None
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "client_name": "AutoMax Dealers",
+            "client_id": clients_data[3]["id"],
+            "amount": 15000,
+            "product_description": "Executive gift sets for VIP customers",
+            "stage": "won",
+            "priority": "high",
+            "tags": ["Gifts"],
+            "owner_initials": "SH",
+            "owner_color": "#2d6a4f",
+            "date_entered": (now - timedelta(days=21)).isoformat(),
+            "date_closed": (now - timedelta(days=5)).isoformat(),
+            "loss_reason": None
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "client_name": "Budget Corp",
+            "client_id": clients_data[4]["id"],
+            "amount": 3500,
+            "product_description": "Basic polo shirts for staff uniforms",
+            "stage": "lost",
+            "priority": "low",
+            "tags": ["Apparel"],
+            "owner_initials": "JR",
+            "owner_color": "#4a5fd7",
+            "date_entered": (now - timedelta(days=28)).isoformat(),
+            "date_closed": (now - timedelta(days=10)).isoformat(),
+            "loss_reason": "Went with cheaper competitor"
+        },
+    ]
+    await db.deals.insert_many(deals_data)
+    
+    # Create orders for the won deal
+    orders_data = [
+        {
+            "id": str(uuid.uuid4()),
+            "order_id": "SOA-1001",
+            "client_id": clients_data[3]["id"],
+            "products_description": "200x Executive Gift Sets",
+            "amount": 9200,
+            "status": "delivered",
+            "progress_percent": 100,
+            "due_date": (now - timedelta(days=5)).isoformat()[:10],
+            "priority": "high",
+            "created_at": (now - timedelta(days=15)).isoformat()
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "order_id": "SOA-1002",
+            "client_id": clients_data[3]["id"],
+            "products_description": "100x Executive Gift Sets (Phase 2)",
+            "amount": 5800,
+            "status": "production",
+            "progress_percent": 65,
+            "due_date": (now + timedelta(days=7)).isoformat()[:10],
+            "priority": "medium",
+            "created_at": (now - timedelta(days=3)).isoformat()
+        },
+    ]
+    await db.orders.insert_many(orders_data)
+    
+    return {
+        "message": "Demo data reset successfully",
+        "data": {
+            "clients": len(clients_data),
+            "products": len(products_data),
+            "deals": len(deals_data),
+            "orders": len(orders_data)
+        }
+    }
+
 # ============== ROOT ROUTE ==============
 
 @api_router.get("/")
