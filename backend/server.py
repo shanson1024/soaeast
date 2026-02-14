@@ -738,18 +738,27 @@ async def delete_deal(deal_id: str, current_user: dict = Depends(get_current_use
 
 @api_router.get("/dashboard/stats", response_model=DashboardStats)
 async def get_dashboard_stats(current_user: dict = Depends(get_current_user)):
-    # Get total revenue from orders
-    orders = await db.orders.find({}, {"_id": 0, "amount": 1, "status": 1, "created_at": 1}).to_list(1000)
-    total_revenue = sum(o.get("amount", 0) for o in orders)
-    open_orders = len([o for o in orders if o.get("status") not in ["delivered", "cancelled"]])
+    # Use MongoDB aggregation for efficient stats calculation
+    revenue_pipeline = [
+        {"$group": {
+            "_id": None,
+            "total_revenue": {"$sum": "$amount"},
+            "order_count": {"$sum": 1}
+        }}
+    ]
+    revenue_result = await db.orders.aggregate(revenue_pipeline).to_list(1)
+    total_revenue = revenue_result[0]["total_revenue"] if revenue_result else 0
+    order_count = revenue_result[0]["order_count"] if revenue_result else 0
     
-    # Get new clients (last 30 days)
+    # Count open orders using aggregation
+    open_orders = await db.orders.count_documents({"status": {"$nin": ["delivered", "cancelled"]}})
+    
+    # Count new clients (last 30 days) using aggregation
     thirty_days_ago = (datetime.now(timezone.utc) - timedelta(days=30)).isoformat()
-    clients = await db.clients.find({}, {"_id": 0, "created_at": 1}).to_list(1000)
-    new_clients = len([c for c in clients if c.get("created_at", "") >= thirty_days_ago])
+    new_clients = await db.clients.count_documents({"created_at": {"$gte": thirty_days_ago}})
     
     # Calculate avg order value
-    avg_order_value = total_revenue / len(orders) if orders else 0
+    avg_order_value = total_revenue / order_count if order_count else 0
     
     return DashboardStats(
         total_revenue=total_revenue,
@@ -764,14 +773,20 @@ async def get_dashboard_stats(current_user: dict = Depends(get_current_user)):
 
 @api_router.get("/dashboard/pipeline-summary", response_model=PipelineSummary)
 async def get_pipeline_summary(current_user: dict = Depends(get_current_user)):
-    deals = await db.deals.find({}, {"_id": 0, "stage": 1, "amount": 1}).to_list(1000)
+    # Use MongoDB aggregation for efficient pipeline summary
+    pipeline = [
+        {"$group": {
+            "_id": "$stage",
+            "total": {"$sum": "$amount"}
+        }}
+    ]
+    results = await db.deals.aggregate(pipeline).to_list(10)
     
     summary = {"prospecting": 0, "proposal": 0, "negotiation": 0, "won": 0, "lost": 0}
-    for deal in deals:
-        stage = deal.get("stage", "prospecting")
-        amount = deal.get("amount", 0)
+    for result in results:
+        stage = result.get("_id", "prospecting")
         if stage in summary:
-            summary[stage] += amount
+            summary[stage] = result.get("total", 0)
     
     return PipelineSummary(**summary)
 
