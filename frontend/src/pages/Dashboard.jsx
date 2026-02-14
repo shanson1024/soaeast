@@ -430,10 +430,30 @@ const Dashboard = () => {
         <div className="p-6 border-b border-crm-border flex items-center justify-between">
           <h3 className="font-medium text-lg">Recent Deals</h3>
           <div className="flex gap-2">
-            <Button variant="outline" size="sm" className="btn-secondary text-sm">
-              <Filter size={14} className="mr-2" /> Filter
-            </Button>
-            <Button variant="outline" size="sm" className="btn-secondary text-sm">
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline" size="sm" className="btn-secondary text-sm" data-testid="deals-filter-btn">
+                  <Filter size={14} className="mr-2" /> Filter {dealFilter !== 'all' && `(${dealFilter})`}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-48">
+                <div className="space-y-2">
+                  <p className="text-sm font-medium mb-2">Filter by Stage</p>
+                  {['all', 'prospecting', 'proposal', 'negotiation', 'won', 'lost'].map(stage => (
+                    <button
+                      key={stage}
+                      onClick={() => setDealFilter(stage)}
+                      className={`w-full text-left px-3 py-2 rounded-lg text-sm capitalize transition-colors ${
+                        dealFilter === stage ? 'bg-crm-green-light text-crm-green' : 'hover:bg-crm-bg'
+                      }`}
+                    >
+                      {stage === 'all' ? 'All Deals' : stage}
+                    </button>
+                  ))}
+                </div>
+              </PopoverContent>
+            </Popover>
+            <Button variant="outline" size="sm" className="btn-secondary text-sm" onClick={handleExportDeals} data-testid="deals-export-btn">
               <Download size={14} className="mr-2" /> Export
             </Button>
           </div>
