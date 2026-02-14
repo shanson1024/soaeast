@@ -126,35 +126,44 @@ class ProductUpdate(BaseModel):
     margin_percent: Optional[float] = None
     image_url: Optional[str] = None
 
+class LineItem(BaseModel):
+    product_name: str
+    quantity: int = 1
+    unit_price: float
+
 class OrderCreate(BaseModel):
     client_id: str
-    products_description: str
-    amount: float
+    line_items: List[LineItem]
     status: str = "draft"
     progress_percent: int = 0
     due_date: str
     priority: str = "medium"
+    notes: str = ""
 
 class OrderResponse(BaseModel):
     id: str
     order_id: str
     client_id: str
     client_name: Optional[str] = None
-    products_description: str
-    amount: float
+    line_items: List[dict]
+    subtotal: float
+    tax_rate: float
+    tax_amount: float
+    total: float
     status: str
     progress_percent: int
     due_date: str
     priority: str
+    notes: str = ""
     created_at: str
 
 class OrderUpdate(BaseModel):
-    products_description: Optional[str] = None
-    amount: Optional[float] = None
+    line_items: Optional[List[LineItem]] = None
     status: Optional[str] = None
     progress_percent: Optional[int] = None
     due_date: Optional[str] = None
     priority: Optional[str] = None
+    notes: Optional[str] = None
 
 class DealCreate(BaseModel):
     client_name: str
