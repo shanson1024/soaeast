@@ -1013,6 +1013,119 @@ async def seed_default_roles():
     await db.roles.insert_many(default_roles)
     return {"message": "Default roles created", "seeded": True, "count": len(default_roles)}
 
+# ============== BROKERS MANAGEMENT ==============
+
+class BrokerCreate(BaseModel):
+    name: str
+    company: str
+    email: EmailStr
+    phone: str = ""
+    territory: str = ""
+    commission_rate: float = 10.0
+    status: str = "active"
+    notes: str = ""
+
+class BrokerResponse(BaseModel):
+    id: str
+    name: str
+    company: str
+    email: str
+    phone: str
+    territory: str
+    commission_rate: float
+    status: str
+    notes: str
+    total_sales: float
+    total_deals: int
+    created_at: str
+
+class BrokerUpdate(BaseModel):
+    name: Optional[str] = None
+    company: Optional[str] = None
+    email: Optional[EmailStr] = None
+    phone: Optional[str] = None
+    territory: Optional[str] = None
+    commission_rate: Optional[float] = None
+    status: Optional[str] = None
+    notes: Optional[str] = None
+
+@api_router.get("/brokers", response_model=List[BrokerResponse])
+async def get_brokers(
+    status: Optional[str] = None,
+    search: Optional[str] = None,
+    current_user: dict = Depends(get_current_user)
+):
+    query = {}
+    if status:
+        query["status"] = status
+    if search:
+        query["$or"] = [
+            {"name": {"$regex": search, "$options": "i"}},
+            {"company": {"$regex": search, "$options": "i"}},
+            {"email": {"$regex": search, "$options": "i"}}
+        ]
+    
+    brokers = await db.brokers.find(query, {"_id": 0}).sort("created_at", -1).to_list(1000)
+    return [BrokerResponse(**b) for b in brokers]
+
+@api_router.get("/brokers/{broker_id}", response_model=BrokerResponse)
+async def get_broker(broker_id: str, current_user: dict = Depends(get_current_user)):
+    broker = await db.brokers.find_one({"id": broker_id}, {"_id": 0})
+    if not broker:
+        raise HTTPException(status_code=404, detail="Broker not found")
+    return BrokerResponse(**broker)
+
+@api_router.post("/brokers", response_model=BrokerResponse)
+async def create_broker(broker: BrokerCreate, current_user: dict = Depends(get_current_user)):
+    broker_id = str(uuid.uuid4())
+    now = datetime.now(timezone.utc).isoformat()
+    broker_doc = {
+        "id": broker_id,
+        **broker.model_dump(),
+        "total_sales": 0,
+        "total_deals": 0,
+        "created_at": now
+    }
+    await db.brokers.insert_one(broker_doc)
+    return BrokerResponse(**{k: v for k, v in broker_doc.items() if k != "_id"})
+
+@api_router.put("/brokers/{broker_id}", response_model=BrokerResponse)
+async def update_broker(broker_id: str, update: BrokerUpdate, current_user: dict = Depends(get_current_user)):
+    update_data = {k: v for k, v in update.model_dump().items() if v is not None}
+    if not update_data:
+        raise HTTPException(status_code=400, detail="No fields to update")
+    
+    result = await db.brokers.update_one({"id": broker_id}, {"$set": update_data})
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Broker not found")
+    
+    broker = await db.brokers.find_one({"id": broker_id}, {"_id": 0})
+    return BrokerResponse(**broker)
+
+@api_router.delete("/brokers/{broker_id}")
+async def delete_broker(broker_id: str, current_user: dict = Depends(get_current_user)):
+    result = await db.brokers.delete_one({"id": broker_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Broker not found")
+    return {"message": "Broker deleted"}
+
+@api_router.post("/brokers/{broker_id}/record-sale")
+async def record_broker_sale(
+    broker_id: str,
+    amount: float,
+    current_user: dict = Depends(get_current_user)
+):
+    """Record a sale for a broker"""
+    result = await db.brokers.update_one(
+        {"id": broker_id},
+        {"$inc": {"total_sales": amount, "total_deals": 1}}
+    )
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Broker not found")
+    
+    broker = await db.brokers.find_one({"id": broker_id}, {"_id": 0})
+    return BrokerResponse(**broker)
+
 # Reset and create clean demo data
 @api_router.post("/reset-demo")
 async def reset_demo_data(current_user: dict = Depends(get_current_user)):
@@ -1023,6 +1136,7 @@ async def reset_demo_data(current_user: dict = Depends(get_current_user)):
     await db.orders.delete_many({})
     await db.clients.delete_many({})
     await db.products.delete_many({})
+    await db.brokers.delete_many({})
     
     now = datetime.now(timezone.utc)
     
