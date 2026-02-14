@@ -77,7 +77,10 @@ const Clients = () => {
       await axios.post(`${API}/clients`, newClient);
       toast.success('Client created successfully');
       setIsModalOpen(false);
-      setNewClient({ name: '', email: '', industry: 'Technology', tier: 'new', status: 'active' });
+      setNewClient({ 
+        name: '', email: '', phone: '', industry: 'Technology', tier: 'new', status: 'active',
+        address: '', city: '', state: '', zip_code: '', contact_person: '', contact_title: '', website: '', notes: ''
+      });
       fetchClients();
     } catch (error) {
       toast.error(error.response?.data?.detail || 'Failed to create client');
