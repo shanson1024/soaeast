@@ -297,13 +297,59 @@ const Orders = () => {
         <div className="p-4 border-b border-crm-border flex items-center justify-between">
           <p className="text-sm text-crm-text-secondary">{filteredOrders.length} results</p>
           <div className="flex gap-2">
-            <Button variant="outline" size="sm" className="btn-secondary text-sm">
-              <Filter size={14} className="mr-2" /> Filter
-            </Button>
-            <Button variant="outline" size="sm" className="btn-secondary text-sm">
-              <ArrowUpDown size={14} className="mr-2" /> Sort
-            </Button>
-            <Button variant="outline" size="sm" className="btn-secondary text-sm">
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline" size="sm" className="btn-secondary text-sm" data-testid="orders-filter-btn">
+                  <Filter size={14} className="mr-2" /> Filter {priorityFilter !== 'all' && `(${priorityFilter})`}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-48">
+                <div className="space-y-2">
+                  <p className="text-sm font-medium mb-2">Filter by Priority</p>
+                  {['all', 'high', 'medium', 'low'].map(priority => (
+                    <button
+                      key={priority}
+                      onClick={() => setPriorityFilter(priority)}
+                      className={`w-full text-left px-3 py-2 rounded-lg text-sm capitalize transition-colors ${
+                        priorityFilter === priority ? 'bg-crm-green-light text-crm-green' : 'hover:bg-crm-bg'
+                      }`}
+                    >
+                      {priority === 'all' ? 'All Priorities' : priority}
+                    </button>
+                  ))}
+                </div>
+              </PopoverContent>
+            </Popover>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline" size="sm" className="btn-secondary text-sm" data-testid="orders-sort-btn">
+                  <ArrowUpDown size={14} className="mr-2" /> Sort
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-48">
+                <div className="space-y-2">
+                  <p className="text-sm font-medium mb-2">Sort Orders</p>
+                  {[
+                    { value: 'newest', label: 'Newest First' },
+                    { value: 'oldest', label: 'Oldest First' },
+                    { value: 'amount-high', label: 'Amount: High to Low' },
+                    { value: 'amount-low', label: 'Amount: Low to High' },
+                    { value: 'due-soon', label: 'Due Date: Soonest' }
+                  ].map(option => (
+                    <button
+                      key={option.value}
+                      onClick={() => setSortOrder(option.value)}
+                      className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${
+                        sortOrder === option.value ? 'bg-crm-green-light text-crm-green' : 'hover:bg-crm-bg'
+                      }`}
+                    >
+                      {option.label}
+                    </button>
+                  ))}
+                </div>
+              </PopoverContent>
+            </Popover>
+            <Button variant="outline" size="sm" className="btn-secondary text-sm" onClick={handleExportOrders} data-testid="orders-export-btn">
               <Download size={14} className="mr-2" /> Export
             </Button>
           </div>
