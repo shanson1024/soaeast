@@ -15,7 +15,8 @@ import {
   Monitor,
   LogOut,
   Menu,
-  X
+  X,
+  Handshake
 } from 'lucide-react';
 
 const Sidebar = ({ isOpen, setIsOpen }) => {
@@ -32,6 +33,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
 
   const customerMenu = [
     { name: 'Client List', icon: Users, path: '/clients' },
+    { name: 'Brokers', icon: Handshake, path: '/brokers' },
     { name: 'Channels', icon: Globe, path: '/channels' },
     { name: 'Pipeline', icon: ClipboardList, path: '/pipeline' },
   ];

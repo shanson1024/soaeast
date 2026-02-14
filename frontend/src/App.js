@@ -16,6 +16,7 @@ import Messages from "./pages/Messages";
 import Channels from "./pages/Channels";
 import Roles from "./pages/Roles";
 import Integrations from "./pages/Integrations";
+import Brokers from "./pages/Brokers";
 
 // Protected Route Component
 const ProtectedRoute = ({ children }) => {
@@ -154,6 +155,14 @@ function AppRoutes() {
         element={
           <ProtectedRoute>
             <Integrations />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/brokers" 
+        element={
+          <ProtectedRoute>
+            <Brokers />
           </ProtectedRoute>
         } 
       />
