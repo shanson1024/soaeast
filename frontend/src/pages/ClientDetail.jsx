@@ -36,8 +36,13 @@ const ClientDetail = () => {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('overview');
   const [newNote, setNewNote] = useState({ content: '', note_type: 'general' });
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editData, setEditData] = useState({});
 
   const noteTypes = ['general', 'call', 'meeting', 'email', 'task'];
+  const industries = ['Healthcare', 'Technology', 'Real Estate', 'Fitness', 'Food & Beverage', 'Consulting', 'Education', 'Insurance', 'Services', 'Automotive', 'Manufacturing', 'Retail', 'Finance'];
+  const tiers = ['gold', 'silver', 'bronze', 'new'];
+  const statuses = ['active', 'inactive', 'lead'];
 
   useEffect(() => {
     fetchClientData();
